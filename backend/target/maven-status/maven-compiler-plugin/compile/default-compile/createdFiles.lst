@@ -1,0 +1,7 @@
+com/example/restfulapi/repository/AdRepository.class
+com/example/api/model/User.class
+com/example/restfulapi/controller/AdController.class
+com/example/restfulapi/service/AdService.class
+com/example/ApiApplication.class
+com/example/restfulapi/model/Ad.class
+com/example/api/TestDatabaseConnection.class
