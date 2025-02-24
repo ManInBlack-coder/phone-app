@@ -1,8 +1,7 @@
-package com.example.restfulapi.repository;
+package com.example.api.repository;
 
-import com.example.restfulapi.model.Ad;
+import com.example.api.model.Ad;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AdRepository extends JpaRepository<Ad, Long> {
-    // Custom queries if necessary
 }

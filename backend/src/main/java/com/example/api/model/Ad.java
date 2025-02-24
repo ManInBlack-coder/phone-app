@@ -1,4 +1,4 @@
-package com.example.restfulapi.model;
+package com.example.api.model; // Muudetud samaks paketiks kui User.java
 
 import javax.persistence.*;
 
@@ -10,29 +10,31 @@ public class Ad {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "category")
+    @Column(name = "category", nullable = false)
     private String category;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true) // nullable=true, kuna user_id on tabelis NULL lubatud
+    private User user;
 
-    // Getters and setters
-
+    // Default constructor
     public Ad() {}
 
-    public Ad(String title, Double price, String category, Long userId) {
+    // Constructor with parameters
+    public Ad(String title, Double price, String category, User user) {
         this.title = title;
         this.price = price;
         this.category = category;
-        this.userId = userId;
+        this.user = user;
     }
 
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -65,11 +67,11 @@ public class Ad {
         this.category = category;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 }
