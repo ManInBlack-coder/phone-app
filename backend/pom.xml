@@ -46,10 +46,18 @@
 		</dependency>
 
 		<dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>8.0.28</version> <!-- You can choose the latest version -->
+        	<groupId>mysql</groupId>
+        	<artifactId>mysql-connector-java</artifactId>
+        	<version>8.0.28</version> <!-- You can choose the latest version -->
     	</dependency>
+
+		<!-- DevTools only once -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-devtools</artifactId>
+    		<scope>runtime</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

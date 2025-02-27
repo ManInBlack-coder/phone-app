@@ -3,13 +3,13 @@ package com.example.demo.controllers;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@RestController  // Add this annotation
+public class MyTestController2 {
 
-@RestController
-public class MyTestController {
-    @GetMapping("/test")
+    @GetMapping("/test24")
     public String test() {
-        return "Test changed at " + System.currentTimeMillis(); // Muuda siin midagi
+        return "This is controller test  niger!";
+
     }
+
 }
-
-
