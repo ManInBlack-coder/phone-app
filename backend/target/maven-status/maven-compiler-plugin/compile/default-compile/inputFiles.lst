@@ -1,3 +1,6 @@
+/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/services/UserService.java
 /Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/BackendApplication.java
-/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/controllers/MyTestController.java
-/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/controllers/MyTestController2.java
+/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/Repository/UserRepository.java
+/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/models/User.java
+/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/config/SecurityConfig.java
+/Users/sass/Documents/GitHub/phone-app/backend/src/main/java/com/example/demo/controllers/AuthController.java
