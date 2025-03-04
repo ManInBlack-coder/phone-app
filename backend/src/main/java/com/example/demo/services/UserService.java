@@ -34,4 +34,8 @@ public class UserService {
         }
         throw new RuntimeException("Invalid email or password");
     }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }
