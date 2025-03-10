@@ -6,6 +6,8 @@ import SignUpScreen from '../pages/SignUpScreen';
 import SignInScreen from '../pages/SignInScreen';
 import MainScreen from '../pages/main/main';
 import ProfileScreen from '../pages/ProfileScreen';
+import CreateListingScreen from '../pages/CreateListingScreen';
+import ListingDetailScreen from '../pages/ListingDetailScreen';
 import { RootStackParamList } from '@/hooks/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -57,6 +59,23 @@ export default function App() {
         component={ProfileScreen}
         options={{
           headerShown: false
+        }}
+      />
+      <Stack.Screen 
+        name="AddListing" 
+        component={CreateListingScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen 
+        name="ListingDetail" 
+        component={ListingDetailScreen}
+        options={{
+          headerShown: true,
+          headerTransparent: true,
+          headerTitle: '',
+          headerTintColor: '#000',
         }}
       />
     </Stack.Navigator>

@@ -7,5 +7,11 @@ export type RootStackParamList = {
     MyListings: undefined;
     Settings: undefined;
     AddListing: undefined;
+    CreateListing: undefined;
+    ListingDetail: { id: number };
   };
+  
+// Add a default export to satisfy React Navigation
+const Types = {};
+export default Types;
   

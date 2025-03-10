@@ -22,6 +22,9 @@ public class Kuulutus {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -65,6 +68,14 @@ public class Kuulutus {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public User getUser() {

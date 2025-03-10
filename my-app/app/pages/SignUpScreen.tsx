@@ -1,33 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
+import { Ionicons } from '@expo/vector-icons';
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 
-interface SignUpScreenProps {
-  navigation: SignUpScreenNavigationProp;
-}
-
-const API_URL = Platform.select({
-  ios: 'http://localhost:8080',
-  android: 'http://10.0.2.2:8080',
-  default: 'http://localhost:8080'
-});
-
-export default function SignUpScreen({ navigation }: SignUpScreenProps) {
-  const [username, setUsername] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+export default function SignUpScreen() {
+  const navigation = useNavigation<SignUpScreenNavigationProp>();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const handleSignUp = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/signup`, {
+      const response = await fetch('http://10.15.16.201:8080/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ 
+          username: name,
+          email, 
+          password 
+        }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -47,30 +46,90 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Sign Up Screen</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="#4B5FBD" />
+        <Text style={styles.backText}>Sign Up</Text>
+      </TouchableOpacity>
+
+      <View style={styles.form}>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="John Doe"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>E-mail</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="example@gmail.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={[styles.input, styles.passwordInput]}
+              placeholder="********"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity 
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons 
+                name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                size={24} 
+                color="#4B5FBD" 
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.termsContainer}
+          onPress={() => setAgreeToTerms(!agreeToTerms)}
+        >
+          <View style={styles.checkbox}>
+            {agreeToTerms && <Ionicons name="checkmark" size={16} color="#4B5FBD" />}
+          </View>
+          <Text style={styles.termsText}>
+            I agree with <Text style={styles.link}>Terms</Text> & <Text style={styles.link}>Privacy</Text>
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.signUpButton, !agreeToTerms && styles.signUpButtonDisabled]}
+          onPress={handleSignUp}
+          disabled={!agreeToTerms}
+        >
+          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.signInContainer}
+          onPress={() => navigation.navigate('SignIn')}
+        >
+          <Text style={styles.signInText}>
+            Already have an account? <Text style={styles.link}>Sign In</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -78,22 +137,94 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 16,
+  },
+  backText: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginLeft: 8,
+    color: '#4B5FBD',
+  },
+  form: {
+    flex: 1,
+    padding: 24,
+  },
+  inputContainer: {
     marginBottom: 20,
   },
+  label: {
+    fontSize: 16,
+    color: '#4B5FBD',
+    marginBottom: 8,
+  },
   input: {
-    width: 300,
-    height: 40,
-    borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
+    borderColor: '#E8E8E8',
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#4B5FBD',
+    borderRadius: 4,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  link: {
+    color: '#4B5FBD',
+    fontWeight: '500',
+  },
+  signUpButton: {
+    backgroundColor: '#4B5FBD',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  signUpButtonDisabled: {
+    backgroundColor: '#B0B0B0',
+  },
+  signUpButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  signInContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  signInText: {
+    fontSize: 14,
+    color: '#666',
   },
 });
