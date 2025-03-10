@@ -23,6 +23,9 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         try {
             String username = request.get("username");
+            if (username == null) {
+                username = request.get("nimi");
+            }
             String email = request.get("email");
             String password = request.get("password");
 

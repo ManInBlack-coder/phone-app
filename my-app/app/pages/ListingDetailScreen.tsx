@@ -4,6 +4,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '@/hooks/types';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ListingDetailRouteProp = RouteProp<RootStackParamList, 'ListingDetail'>;
 type ListingDetailNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -12,10 +13,19 @@ interface Listing {
   id: number;
   title: string;
   price: number;
-  image_url: string;
+  imageUrl: string;  // Changed from image_url to match the backend response
   category: string;
   description?: string;
 }
+
+// API base URL
+const API_BASE_URL = 'http://192.168.1.71:8080';
+
+// Function to fix malformed image URLs
+const fixImageUrl = (imageUrl: string | null): string | null => {
+  if (!imageUrl) return null;
+  return imageUrl;
+};
 
 const ListingDetailScreen = () => {
   const route = useRoute<ListingDetailRouteProp>();
@@ -24,15 +34,39 @@ const ListingDetailScreen = () => {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    const getSessionId = async () => {
+      const storedSessionId = await AsyncStorage.getItem('sessionId');
+      setSessionId(storedSessionId);
+    };
+    getSessionId();
     fetchListingDetails();
   }, [id]);
 
   const fetchListingDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://10.15.16.201:8080/api/listings/${id}`);
+      const email = await AsyncStorage.getItem('userEmail');
+      const password = await AsyncStorage.getItem('userPassword');
+      const storedSessionId = await AsyncStorage.getItem('sessionId');
+
+      const headers = {
+        'Accept': 'application/json',
+        ...(email && password ? { 
+          'Authorization': `Basic ${btoa(`${email}:${password}`)}` 
+        } : {}),
+        ...(storedSessionId ? { 'Cookie': `JSESSIONID=${storedSessionId}` } : {})
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/listings/${id}`, {
+        headers: headers,
+        credentials: 'include'
+      });
+
       if (response.ok) {
         const data = await response.json();
         setListing(data);
@@ -74,14 +108,45 @@ const ListingDetailScreen = () => {
     );
   }
 
+  // Fix image URL if needed
+  let imageUrl = listing.imageUrl;
+  if (imageUrl && !imageUrl.startsWith('http')) {
+    imageUrl = `${API_BASE_URL}${imageUrl}`;
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Image 
-          source={{ uri: listing.image_url }} 
-          style={styles.image}
-          resizeMode="cover"
-        />
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ 
+              uri: imageUrl,
+              headers: {
+                'Accept': 'image/*',
+                ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
+              }
+            }}
+            style={styles.image}
+            onLoadStart={() => setImageLoading(true)}
+            onLoadEnd={() => setImageLoading(false)}
+            onError={(e) => {
+              console.error('Error loading image:', e.nativeEvent.error);
+              setImageError(e.nativeEvent.error);
+              setImageLoading(false);
+            }}
+          />
+          {imageLoading && (
+            <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
+              <ActivityIndicator size="large" color="#4B5FBD" />
+            </View>
+          )}
+          {imageError && !imageLoading && (
+            <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
+              <Ionicons name="image-outline" size={40} color="#8E8E93" />
+              <Text style={styles.imageErrorText}>Failed to load image</Text>
+            </View>
+          )}
+        </View>
         
         <View style={styles.contentContainer}>
           <View style={styles.header}>
@@ -146,9 +211,25 @@ const styles = StyleSheet.create({
     color: '#4B5FBD',
     fontWeight: '500',
   },
-  image: {
+  imageContainer: {
     width: windowWidth,
     height: windowWidth,
+    backgroundColor: '#F5F5F5',
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  imageErrorText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#8E8E93',
   },
   contentContainer: {
     padding: 24,

@@ -16,4 +16,18 @@ web-build/
 
 # IDE
 .idea/
-.vscode/ 
+.vscode/
+
+# Spring Boot
+backend/target/
+backend/src/main/resources/application.properties
+backend/.env
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Logs
+*.log 

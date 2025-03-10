@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Application Properties ###
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+
+### Environment Variables ###
+.env
+
+### Logs ###
+*.log
+
+### Compiled files ###
+*.class
+target/
+bin/
+

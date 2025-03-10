@@ -4,6 +4,7 @@ import com.example.demo.models.Kuulutus;
 import com.example.demo.models.User;
 import com.example.demo.Repository.KuulutusRepository;
 import com.example.demo.Repository.UserRepository;
+import com.example.demo.services.SupabaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ public class KuulutusController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
 
     @Value("${upload.path:/uploads}")
     private String uploadPath;
@@ -43,7 +47,7 @@ public class KuulutusController {
             @RequestParam("category") String category,
             @RequestParam("description") String description,
             @RequestParam("user_id") Integer userId,
-            @RequestParam(value = "images", required = false) MultipartFile[] images) {
+            @RequestParam(value = "image", required = false) MultipartFile image) {
         
         Map<String, Object> response = new HashMap<>();
         try {
@@ -57,27 +61,10 @@ public class KuulutusController {
             kuulutus.setDescription(description);
             kuulutus.setUser(user);
 
-            // Handle image upload
-            if (images != null && images.length > 0) {
-                List<String> imageUrls = new ArrayList<>();
-                for (MultipartFile image : images) {
-                    String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-                    Path uploadDir = Paths.get(uploadPath);
-                    
-                    if (!Files.exists(uploadDir)) {
-                        Files.createDirectories(uploadDir);
-                    }
-                    
-                    Path filePath = uploadDir.resolve(fileName);
-                    Files.copy(image.getInputStream(), filePath);
-                    
-                    String imageUrl = "/uploads/" + fileName;
-                    imageUrls.add(imageUrl);
-                }
-                // For now, we'll just save the first image URL
-                if (!imageUrls.isEmpty()) {
-                    kuulutus.setImageUrl(imageUrls.get(0));
-                }
+            // Handle image upload to Supabase
+            if (image != null) {
+                String imageUrl = supabaseStorageService.uploadFile(image);
+                kuulutus.setImageUrl(imageUrl);
             }
 
             Kuulutus savedKuulutus = kuulutusRepository.save(kuulutus);
@@ -129,29 +116,21 @@ public class KuulutusController {
             if (category != null) kuulutus.setCategory(category);
             if (description != null) kuulutus.setDescription(description);
 
-            // Handle image update
+            // Handle image update using Supabase
             if (image != null) {
-                String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-                Path uploadDir = Paths.get(uploadPath);
-                
-                if (!Files.exists(uploadDir)) {
-                    Files.createDirectories(uploadDir);
-                }
-                
-                Path filePath = uploadDir.resolve(fileName);
-                Files.copy(image.getInputStream(), filePath);
-                
                 // Delete old image if exists
                 if (kuulutus.getImageUrl() != null) {
                     try {
-                        Files.deleteIfExists(Paths.get(uploadPath, kuulutus.getImageUrl()));
+                        supabaseStorageService.deleteFile(kuulutus.getImageUrl());
                     } catch (IOException e) {
                         // Log error but continue
                         System.err.println("Failed to delete old image: " + e.getMessage());
                     }
                 }
                 
-                kuulutus.setImageUrl("/uploads/" + fileName);
+                // Upload new image
+                String imageUrl = supabaseStorageService.uploadFile(image);
+                kuulutus.setImageUrl(imageUrl);
             }
 
             Kuulutus updatedKuulutus = kuulutusRepository.save(kuulutus);
@@ -180,10 +159,10 @@ public class KuulutusController {
                 throw new RuntimeException("Not authorized to delete this listing");
             }
 
-            // Delete image if exists
+            // Delete image from Supabase if exists
             if (kuulutus.getImageUrl() != null) {
                 try {
-                    Files.deleteIfExists(Paths.get(uploadPath, kuulutus.getImageUrl()));
+                    supabaseStorageService.deleteFile(kuulutus.getImageUrl());
                 } catch (IOException e) {
                     // Log error but continue with deletion
                     System.err.println("Failed to delete image: " + e.getMessage());
@@ -194,6 +173,39 @@ public class KuulutusController {
             
             response.put("success", true);
             response.put("message", "Listing deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/fix-image-urls")
+    public ResponseEntity<Map<String, Object>> fixImageUrls() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<Kuulutus> kuulutused = kuulutusRepository.findAll();
+            int fixedCount = 0;
+            
+            for (Kuulutus kuulutus : kuulutused) {
+                String imageUrl = kuulutus.getImageUrl();
+                if (imageUrl != null && (imageUrl.contains("http:/") && imageUrl.contains("https:/"))) {
+                    // Extract the Supabase part of the URL
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("https://isgqnyhkexduycwmcjxa\\.supabase\\.co/storage/v1/object/public/listings/[^/]+\\.[a-zA-Z0-9]+");
+                    java.util.regex.Matcher matcher = pattern.matcher(imageUrl);
+                    
+                    if (matcher.find()) {
+                        String fixedUrl = matcher.group(0);
+                        kuulutus.setImageUrl(fixedUrl);
+                        kuulutusRepository.save(kuulutus);
+                        fixedCount++;
+                    }
+                }
+            }
+            
+            response.put("success", true);
+            response.put("message", "Fixed " + fixedCount + " image URLs");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

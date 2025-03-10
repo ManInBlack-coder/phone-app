@@ -1,6 +1,0 @@
-com/example/demo/BackendApplication.class
-com/example/demo/config/SecurityConfig.class
-com/example/demo/models/User.class
-com/example/demo/controllers/AuthController.class
-com/example/demo/Repository/UserRepository.class
-com/example/demo/services/UserService.class

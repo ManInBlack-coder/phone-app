@@ -8,6 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
+// API base URL
+const API_BASE_URL = 'http://192.168.1.71:8080';
+
 export default function SignInScreen() {
   const navigation = useNavigation<SignInScreenNavigationProp>();
   const [email, setEmail] = useState('');
@@ -17,7 +20,7 @@ export default function SignInScreen() {
 
   const handleSignIn = async () => {
     try {
-      const response = await fetch('http://10.15.16.201:8080/api/auth/signin', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,9 +32,48 @@ export default function SignInScreen() {
       });
 
       const data = await response.json();
+      console.log('Sign in response:', data);
+      console.log('Response headers:', response.headers);
 
       if (response.ok) {
+        // Save session ID from response headers
+        const setCookieHeader = response.headers.get('set-cookie');
+        console.log('Set-Cookie header:', setCookieHeader);
+        
+        if (setCookieHeader) {
+          const sessionMatch = setCookieHeader.match(/JSESSIONID=([^;]+)/);
+          console.log('Session match:', sessionMatch);
+          
+          if (sessionMatch && sessionMatch[1]) {
+            const sessionId = sessionMatch[1];
+            console.log('Saving session ID:', sessionId);
+            await AsyncStorage.setItem('sessionId', sessionId);
+          }
+        }
+
         await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('userPassword', password);
+        
+        // Check for token in different possible locations
+        const token = data.token || data.accessToken || data.jwt;
+        console.log('Token from response:', token);
+        
+        if (token) {
+          console.log('Saving token:', token);
+          await AsyncStorage.setItem('token', token);
+        } else {
+          console.log('No token found in response');
+          // Try to get token from headers
+          const authHeader = response.headers.get('Authorization');
+          if (authHeader) {
+            const tokenMatch = authHeader.match(/Bearer\s+(.+)/);
+            if (tokenMatch && tokenMatch[1]) {
+              console.log('Saving token from header:', tokenMatch[1]);
+              await AsyncStorage.setItem('token', tokenMatch[1]);
+            }
+          }
+        }
+
         navigation.navigate('Main');
       } else {
         setError(data.message || 'Sign in failed');

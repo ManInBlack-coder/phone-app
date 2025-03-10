@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import ProfileScreen from '../ProfileScreen';
 import { RootStackParamList } from '@/hooks/types';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,6 +15,9 @@ interface Category {
   name: string;
   icon: string;
 }
+
+// API base URL
+const API_BASE_URL = 'http://192.168.1.71:8080';
 
 const categories: Category[] = [
   { id: 'popular', name: 'Popular', icon: 'star' },
@@ -33,28 +36,142 @@ interface Listing {
   category: string;
 }
 
+const ListingImage = ({ imageUrl, sessionId }: { imageUrl: string | null, sessionId: string | null }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  if (!imageUrl) {
+    return (
+      <View style={[styles.image, styles.imagePlaceholder]}>
+        <ActivityIndicator size="large" color="#4B5FBD" />
+      </View>
+    );
+  }
+
+  // Fix URL if it's malformed
+  let fixedUrl = imageUrl;
+  if (!imageUrl.startsWith('http')) {
+    fixedUrl = `${API_BASE_URL}${imageUrl}`;
+  }
+
+  return (
+    <View style={styles.imageContainer}>
+      <Image 
+        source={{ 
+          uri: fixedUrl,
+          headers: {
+            'Accept': 'image/*',
+            ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
+          }
+        }}
+        style={styles.image}
+        onLoadStart={() => setIsLoading(true)}
+        onLoadEnd={() => setIsLoading(false)}
+        onError={(e) => {
+          console.error('Error loading image:', e.nativeEvent.error);
+          setError(e.nativeEvent.error);
+          setIsLoading(false);
+        }}
+      />
+      {isLoading && (
+        <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
+          <ActivityIndicator size="large" color="#4B5FBD" />
+        </View>
+      )}
+      {error && !isLoading && (
+        <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
+          <Ionicons name="image-outline" size={40} color="#8E8E93" />
+          <Text style={styles.errorText}>Failed to load image</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
 const ListingsTab = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('popular');
   const [token, setToken] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const pollingInterval = useRef<NodeJS.Timeout>();
 
+  useEffect(() => {
+    const getAuthData = async () => {
+      const storedToken = await AsyncStorage.getItem('token');
+      const storedSessionId = await AsyncStorage.getItem('sessionId');
+      setToken(storedToken);
+      setSessionId(storedSessionId);
+    };
+    getAuthData();
+  }, []);
+
   const fetchListings = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem('jwtToken');
-      setToken(storedToken);
+      const storedToken = await AsyncStorage.getItem('token');
+      const storedSessionId = await AsyncStorage.getItem('sessionId');
+      const email = await AsyncStorage.getItem('userEmail');
+      const password = await AsyncStorage.getItem('userPassword');
+      console.log('Stored token:', storedToken);
+      console.log('Stored session ID:', storedSessionId);
+      console.log('Stored email:', email);
       
-      const response = await fetch('http://10.15.16.201:8080/api/listings', {
-        headers: {
-          'Authorization': storedToken ? `Bearer ${storedToken}` : ''
-        }
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ...(email && password ? { 
+          'Authorization': `Basic ${btoa(`${email}:${password}`)}` 
+        } : {}),
+        ...(storedSessionId ? { 'Cookie': `JSESSIONID=${storedSessionId}` } : {})
+      };
+      
+      console.log('Request headers:', headers);
+      
+      const response = await fetch(`${API_BASE_URL}/api/listings`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
       });
+      
       if (response.ok) {
         const data = await response.json();
         setListings(data);
+        
+        // Log all response headers
+        const allHeaders: Record<string, string> = {};
+        response.headers.forEach((value: string, key: string) => {
+          allHeaders[key] = value;
+        });
+        console.log('Response headers:', allHeaders);
+        
+        // Save session ID from response headers
+        const setCookieHeader = response.headers.get('set-cookie');
+        console.log('Listings fetch Set-Cookie:', setCookieHeader);
+        
+        if (setCookieHeader) {
+          const sessionMatch = setCookieHeader.match(/JSESSIONID=([^;]+)/);
+          if (sessionMatch && sessionMatch[1]) {
+            const newSessionId = sessionMatch[1];
+            console.log('New session ID from listings:', newSessionId);
+            await AsyncStorage.setItem('sessionId', newSessionId);
+            setSessionId(newSessionId);
+          }
+        }
+
+        // Update token if it's in the response
+        const authHeader = response.headers.get('Authorization');
+        if (authHeader) {
+          const tokenMatch = authHeader.match(/Bearer\s+(.+)/);
+          if (tokenMatch && tokenMatch[1]) {
+            console.log('New token from listings:', tokenMatch[1]);
+            await AsyncStorage.setItem('token', tokenMatch[1]);
+            setToken(tokenMatch[1]);
+          }
+        }
       } else {
-        console.error('Failed to fetch listings');
+        console.error('Failed to fetch listings:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
       }
     } catch (error) {
       console.error('Error fetching listings:', error);
@@ -78,39 +195,20 @@ const ListingsTab = () => {
 
   const renderItem = ({ item }: { item: Listing }) => {
     console.log('Rendering item:', item);
-    const imageUrl = item.imageUrl ? `http://10.15.16.201:8080${item.imageUrl}` : null;
-    console.log('Image URL:', imageUrl);
+    // Use the image URL directly from the backend, which should be a complete Supabase URL
+    const imageUrl = item.imageUrl || null;
     
     return (
-    <TouchableOpacity 
-      style={styles.listingCard}
-      onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
-    >
-      {imageUrl ? (
-        <Image 
-          source={{ 
-            uri: imageUrl,
-            headers: {
-              'Accept': 'image/*',
-              'Authorization': token ? `Bearer ${token}` : ''
-            }
-          }}
-          style={styles.listingImage}
-          resizeMode="cover"
-          onError={(error) => console.error('Image loading error:', error.nativeEvent)}
-          onLoad={() => console.log('Image loaded successfully:', imageUrl)}
-        />
-      ) : (
-        <View style={[styles.listingImage, styles.placeholderContainer]}>
-          <Ionicons name="image-outline" size={40} color="#8E8E93" />
-          <Text style={styles.placeholderText}>No Image</Text>
+      <TouchableOpacity 
+        style={styles.listingCard}
+        onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
+      >
+        <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
+        <View style={styles.listingInfo}>
+          <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
+          <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
         </View>
-      )}
-      <View style={styles.listingInfo}>
-        <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
-        <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     );
   };
 
@@ -302,10 +400,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  listingImage: {
+  imageContainer: {
     width: '100%',
     height: cardWidth,
     borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  imagePlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  errorText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#8E8E93',
   },
   listingInfo: {
     paddingTop: 12,
@@ -326,15 +441,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
-  },
-  placeholderContainer: {
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#8E8E93',
   },
 });

@@ -14,6 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// API base URL
+const API_BASE_URL = 'http://192.168.1.71:8080';
+
 const categories = [
   'Electronics',
   'Furniture',
@@ -44,7 +47,7 @@ export default function CreateListingScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.3,
     });
 
     if (!result.canceled && result.assets[0].uri) {
@@ -58,14 +61,34 @@ export default function CreateListingScreen() {
 
   const handleSubmit = async () => {
     try {
+      if (!title || !category || !price) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
       const userEmail = await AsyncStorage.getItem('userEmail');
       if (!userEmail) {
         alert('Please sign in first');
         return;
       }
 
+      const password = await AsyncStorage.getItem('userPassword');
+      const sessionId = await AsyncStorage.getItem('sessionId');
+      const authHeader = `Basic ${btoa(`${userEmail}:${password}`)}`;
+
       // Get user_id first
-      const userResponse = await fetch(`http://10.15.16.201:8080/api/users/profile/${encodeURIComponent(userEmail)}`);
+      const userResponse = await fetch(`${API_BASE_URL}/api/users/profile/${encodeURIComponent(userEmail)}`, {
+        headers: {
+          'Authorization': authHeader,
+          'Accept': 'application/json',
+          ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to get user profile');
+      }
+
       const userData = await userResponse.json();
       
       const formData = new FormData();
@@ -75,38 +98,46 @@ export default function CreateListingScreen() {
       formData.append('description', description);
       formData.append('user_id', userData.id);
 
-      // Append images
+      // Append image if exists
       if (images.length > 0) {
         const imageUri = images[0];
-        const filename = imageUri.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename || '');
-        const type = match ? `image/${match[1]}` : 'image';
+        const filename = imageUri.split('/').pop() || 'image.jpg';
+        
+        // Create file object from URI
+        const file = {
+          uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
+          type: 'image/jpeg',
+          name: filename
+        };
 
-        formData.append('image', {
-          uri: imageUri,
-          name: filename,
-          type,
-        } as any);
+        // Append image with specific field name
+        formData.append('image', file as any);
       }
 
-      const response = await fetch('http://10.15.16.201:8080/api/listings/create', {
+      const response = await fetch(`${API_BASE_URL}/api/listings/create`, {
         method: 'POST',
-        body: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': authHeader,
+          'Accept': 'application/json',
+          ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
         },
+        body: formData
       });
 
       if (response.ok) {
         alert('Listing created successfully!');
         navigation.goBack();
       } else {
-        const error = await response.text();
-        alert(error || 'Failed to create listing');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to create listing');
       }
     } catch (error) {
       console.error('Error creating listing:', error);
-      alert('Failed to create listing');
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('Failed to create listing. Please try again.');
+      }
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,6 +13,9 @@ interface UserProfile {
   nimi: string;
   email: string;
 }
+
+// API base URL
+const API_BASE_URL = 'http://192.168.1.71:8080';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -31,11 +34,16 @@ export default function ProfileScreen() {
         return;
       }
 
-      const response = await fetch(`http://10.15.16.201:8080/api/users/profile/${encodeURIComponent(userEmail)}`, {
+      const password = await AsyncStorage.getItem('userPassword');
+      const sessionId = await AsyncStorage.getItem('sessionId');
+
+      const response = await fetch(`${API_BASE_URL}/api/users/profile/${encodeURIComponent(userEmail)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Basic ${btoa(`${userEmail}:${password}`)}`,
+          ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
         }
       });
 
