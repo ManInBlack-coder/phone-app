@@ -23,7 +23,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .cors().and()
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/api/auth/**", "/api/kuulutused/**").permitAll()
+                .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("/api/users/**").permitAll()
+                .antMatchers("/api/kuulutused/**").permitAll()
+                .antMatchers("/api/listings/**").permitAll()
                 .anyRequest().authenticated()
             .and()
             .formLogin().disable()
@@ -35,14 +38,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:8080",
-            "http://localhost:19006", // Expo iOS default
-            "http://localhost:19000", // Expo dev tools
+            "http://localhost:19006",
+            "http://localhost:19000",
             "http://127.0.0.1:8080",
             "http://127.0.0.1:19006",
-            "http://127.0.0.1:19000"
+            "http://127.0.0.1:19000",
+            "http://10.15.16.201:8080",
+            "http://10.15.16.201:19006",
+            "http://10.15.16.201:19000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
         configuration.setAllowCredentials(true);
         

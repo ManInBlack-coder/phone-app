@@ -2,6 +2,10 @@ export type RootStackParamList = {
     Home: undefined;
     SignUp: undefined;
     SignIn: undefined;
-    Main: undefined; // Add Main screen
+    Main: undefined;
+    Profile: undefined;
+    MyListings: undefined;
+    Settings: undefined;
+    AddListing: undefined;
   };
   

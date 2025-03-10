@@ -1,51 +1,50 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
 
-type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
+type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-interface SignInScreenProps {
-  navigation: SignInScreenNavigationProp;
-}
-
-const API_URL = Platform.select({
-  ios: 'http://localhost:8080',
-  android: 'http://10.0.2.2:8080',
-  default: 'http://localhost:8080'
-});
-
-export default function SignInScreen({ navigation }: SignInScreenProps) {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+export default function SignInScreen() {
+  const navigation = useNavigation<SignInScreenNavigationProp>();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSignIn = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/signin`, {
+      const response = await fetch('http://10.15.16.201:8080/api/auth/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
+
       const data = await response.json();
+
       if (response.ok) {
+        // Save user email to AsyncStorage
+        await AsyncStorage.setItem('userEmail', email);
         navigation.navigate('Main');
       } else {
-        alert(data.message || 'Sign in failed');
+        setError(data.message || 'Sign in failed');
       }
     } catch (error) {
-      if (error instanceof Error) {
-        alert('Error: ' + error.message);
-      } else {
-        alert('An unexpected error occurred');
-      }
+      setError('Network error');
+      console.error('Error:', error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Sign In Screen</Text>
+      <Text style={styles.title}>Sign In</Text>
+      
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -54,14 +53,24 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+      
       <TextInput
         style={styles.input}
         placeholder="Password"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
-      <Button title="Sign In" onPress={handleSignIn} />
+      
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      
+      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+        <Text style={styles.buttonText}>Sign In</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+        <Text style={styles.link}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -69,22 +78,40 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
-  text: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
-    width: 300,
-    height: 40,
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 15,
     marginBottom: 15,
-    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  button: {
+    backgroundColor: '#4B5FBD',
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  link: {
+    color: '#4B5FBD',
+    textAlign: 'center',
+  },
+  error: {
+    color: 'red',
+    marginBottom: 15,
+    textAlign: 'center',
   },
 });

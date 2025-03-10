@@ -1,19 +1,62 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import ProfileScreen from '../ProfileScreen';
 import { RootStackParamList } from '@/hooks/types';
 
-type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Main'>;
+const Tab = createBottomTabNavigator();
 
-interface MainScreenProps {
-  navigation: MainScreenNavigationProp;
-}
+const HomeTab = () => (
+  <View style={styles.container}>
+    <Text style={styles.text}>Welcome to the Main Screen!</Text>
+  </View>
+);
 
-export default function MainScreen({ navigation }: MainScreenProps) {
+const BookmarksTab = () => (
+  <View style={styles.container}>
+    <Text style={styles.text}>Bookmarks</Text>
+  </View>
+);
+
+export default function MainScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome to the Main Screen!</Text>
-    </View>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: any;
+
+          if (route.name === 'HomeTab') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'BookmarksTab') {
+            iconName = focused ? 'bookmark' : 'bookmark-outline';
+          } else if (route.name === 'ProfileTab') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#4B5FBD',
+        tabBarInactiveTintColor: '#8E8E93',
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen 
+        name="HomeTab" 
+        component={HomeTab}
+        options={{ title: 'Home' }}
+      />
+      <Tab.Screen 
+        name="BookmarksTab" 
+        component={BookmarksTab}
+        options={{ title: 'Bookmarks' }}
+      />
+      <Tab.Screen 
+        name="ProfileTab" 
+        component={ProfileScreen}
+        options={{ title: 'Profile' }}
+      />
+    </Tab.Navigator>
   );
 }
 
