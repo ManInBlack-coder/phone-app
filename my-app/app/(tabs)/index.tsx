@@ -21,6 +21,7 @@ export default function App() {
       screenOptions={{
         headerStyle: {
           backgroundColor: 'white',
+          height: 10,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

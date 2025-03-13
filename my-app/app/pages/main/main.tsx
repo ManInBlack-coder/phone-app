@@ -141,7 +141,6 @@ const ListingsTab = () => {
         response.headers.forEach((value: string, key: string) => {
           allHeaders[key] = value;
         });
-        //console.log('Response headers:', allHeaders);
         
         // Save session ID from response headers
         const setCookieHeader = response.headers.get('set-cookie');
@@ -339,7 +338,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    paddingTop: 48,
+    paddingTop: 28,
     backgroundColor: '#fff',
   },
   searchContainer: {
@@ -364,11 +363,12 @@ const styles = StyleSheet.create({
   },
   categoriesContent: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   categoryButton: {
     alignItems: 'center',
     marginRight: 20,
+    marginBottom: 50,
   },
   categoryButtonActive: {
     opacity: 1,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 120,
+    paddingBottom: 70,
   },
   row: {
     justifyContent: 'space-between',

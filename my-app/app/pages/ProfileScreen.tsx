@@ -7,7 +7,7 @@ import { RootStackParamList } from '@/hooks/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../utils/apiUtils';
 import MyListingsScreen from './MyListingsScreen';
-import SettingsScreen from './SettingsScreen';
+
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
