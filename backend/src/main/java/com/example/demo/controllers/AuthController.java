@@ -7,16 +7,25 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.example.demo.models.User;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = {"http://localhost:19006"}, allowCredentials = "true")
 public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, Object>> signUp(@RequestBody Map<String, String> request) {
@@ -41,16 +50,24 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<Map<String, Object>> signIn(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, Object>> signIn(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         Map<String, Object> response = new HashMap<>();
         try {
             String email = request.get("email");
             String password = request.get("password");
 
-            userService.authenticateUser(email, password);
+            User user = userService.authenticateUser(email, password);
+            String token = generateToken(user);
             response.put("success", true);
+            response.put("token", token);
             response.put("message", "Sign in successful");
-            return ResponseEntity.ok(response);
+
+            String sessionId = httpRequest.getSession().getId();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.SET_COOKIE, "JSESSIONID=" + sessionId);
+
+            return ResponseEntity.ok().headers(headers).body(response);
         } catch (RuntimeException e) {
             response.put("success", false);
             response.put("message", e.getMessage());
@@ -69,5 +86,22 @@ public class AuthController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private String generateToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getEmail())
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+    }
+
+    private String extractSessionId(String setCookieHeader) {
+        String[] cookies = setCookieHeader.split(";");
+        for (String cookie : cookies) {
+            if (cookie.trim().startsWith("JSESSIONID=")) {
+                return cookie.split("=")[1];
+            }
+        }
+        return null;
     }
 }

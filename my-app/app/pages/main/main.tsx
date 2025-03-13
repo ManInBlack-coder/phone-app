@@ -8,7 +8,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../../utils/apiUtils';
-
+import SettingsScreen from '../SettingsScreen';
 const Tab = createBottomTabNavigator();
 
 interface Category {
@@ -141,19 +141,17 @@ const ListingsTab = () => {
         response.headers.forEach((value: string, key: string) => {
           allHeaders[key] = value;
         });
-        console.log('Response headers:', allHeaders);
+        //console.log('Response headers:', allHeaders);
         
         // Save session ID from response headers
         const setCookieHeader = response.headers.get('set-cookie');
         console.log('Listings fetch Set-Cookie:', setCookieHeader);
         
         if (setCookieHeader) {
-          const sessionMatch = setCookieHeader.match(/JSESSIONID=([^;]+)/);
-          if (sessionMatch && sessionMatch[1]) {
-            const newSessionId = sessionMatch[1];
-            console.log('New session ID from listings:', newSessionId);
-            await AsyncStorage.setItem('sessionId', newSessionId);
-            setSessionId(newSessionId);
+          const sessionId = extractSessionId(setCookieHeader);
+          if (sessionId) {
+            await AsyncStorage.setItem('sessionId', sessionId);
+            setSessionId(sessionId);
           }
         }
 
@@ -177,6 +175,17 @@ const ListingsTab = () => {
     }
   };
 
+  // Uus meetod sessiooni ID väljavõtmiseks
+  const extractSessionId = (setCookieHeader: string) => {
+    const cookies = setCookieHeader.split(';');
+    for (const cookie of cookies) {
+      if (cookie.trim().startsWith('JSESSIONID=')) {
+        return cookie.split('=')[1];
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     // Initial fetch
     fetchListings();
@@ -193,7 +202,6 @@ const ListingsTab = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Listing }) => {
-    console.log('Rendering item:', item);
     // Use the image URL directly from the backend, which should be a complete Supabase URL
     const imageUrl = item.imageUrl || null;
     
@@ -316,6 +324,7 @@ export default function MainScreen() {
         component={ProfileScreen}
         options={{ title: 'Profile' }}
       />
+     
     </Tab.Navigator>
   );
 }

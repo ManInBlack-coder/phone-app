@@ -85,6 +85,18 @@ public class KuulutusController {
         return ResponseEntity.ok(kuulutusRepository.findAll());
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Kuulutus>> getAllKuulutused(@PathVariable Integer userId) {
+        System.out.println("Fetching listings for user ID: " + userId);
+        List<Kuulutus> kuulutused = kuulutusRepository.findByUserId(userId);
+        System.out.println("Listings found: " + kuulutused.size());
+        if (kuulutused.isEmpty()) {
+            System.out.println("No listings found for user ID: " + userId);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+        return ResponseEntity.ok(kuulutused);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Kuulutus> getKuulutusById(@PathVariable Integer id) {
         return kuulutusRepository.findById(id)

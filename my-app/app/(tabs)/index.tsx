@@ -10,6 +10,7 @@ import CreateListingScreen from '../pages/CreateListingScreen';
 import ListingDetailScreen from '../pages/ListingDetailScreen';
 import { RootStackParamList } from '@/hooks/types';
 import MyListingsScreen from '../pages/MyListingsScreen';
+import SettingsScreen from '../pages/SettingsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -86,6 +87,13 @@ export default function App() {
           headerTintColor: '#000',
         }}
       />
+      <Stack.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{
+          headerShown: false
+        }}
+        />
     </Stack.Navigator>
   );
 }

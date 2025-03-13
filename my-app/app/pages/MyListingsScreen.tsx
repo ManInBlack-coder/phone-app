@@ -38,12 +38,10 @@ const MyListingsScreen = () => {
           const data = await response.json();
           setListings(data);
         } else {
-          const errorText = await response.text();
-          setError(`Failed to fetch listings: ${errorText}`);
+          const data = await response.json();
+          setListings(data);
         }
-      } catch (err) {
-        setError('Error fetching listings');
-      } finally {
+      }  finally {
         setLoading(false);
       }
     };
@@ -63,7 +61,7 @@ const MyListingsScreen = () => {
      </View>
      
     </View>
-  );
+  ); 
 
   if (loading) {
     return <ActivityIndicator size="large" color="#4B5FBD" />;
@@ -84,11 +82,16 @@ const MyListingsScreen = () => {
       </TouchableOpacity>
 
       <Text style={styles.title}>My Listings</Text>
-      <FlatList
-        data={listings}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
+
+      {listings.length === 0 ? (
+        <Text style={styles.noListingsText}>Pole ühtegi listingut lisatud</Text>
+      ) : (
+        <FlatList
+          data={listings}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+        />
+      )}
     </View>
   );
 };
@@ -149,6 +152,12 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     textAlign: 'center',
+    marginTop: 20,
+  },
+  noListingsText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#8a8a8a',
     marginTop: 20,
   },
 });
