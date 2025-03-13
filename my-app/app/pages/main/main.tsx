@@ -7,6 +7,7 @@ import { RootStackParamList } from '@/hooks/types';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../../utils/apiUtils';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,8 +17,6 @@ interface Category {
   icon: string;
 }
 
-// API base URL
-const API_BASE_URL = 'http://192.168.1.71:8080';
 
 const categories: Category[] = [
   { id: 'popular', name: 'Popular', icon: 'star' },
@@ -51,7 +50,7 @@ const ListingImage = ({ imageUrl, sessionId }: { imageUrl: string | null, sessio
   // Fix URL if it's malformed
   let fixedUrl = imageUrl;
   if (!imageUrl.startsWith('http')) {
-    fixedUrl = `${API_BASE_URL}${imageUrl}`;
+    fixedUrl = `${getApiUrl()}${imageUrl}`;
   }
 
   return (
@@ -127,7 +126,7 @@ const ListingsTab = () => {
       
       console.log('Request headers:', headers);
       
-      const response = await fetch(`${API_BASE_URL}/api/listings`, {
+      const response = await fetch(`${getApiUrl()}/api/listings`, {
         method: 'GET',
         credentials: 'include',
         headers: headers

@@ -5,6 +5,7 @@ import { RootStackParamList } from '@/hooks/types';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../utils/apiUtils';
 
 type ListingDetailRouteProp = RouteProp<RootStackParamList, 'ListingDetail'>;
 type ListingDetailNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -17,9 +18,6 @@ interface Listing {
   category: string;
   description?: string;
 }
-
-// API base URL
-const API_BASE_URL = 'http://192.168.1.71:8080';
 
 // Function to fix malformed image URLs
 const fixImageUrl = (imageUrl: string | null): string | null => {
@@ -62,7 +60,7 @@ const ListingDetailScreen = () => {
         ...(storedSessionId ? { 'Cookie': `JSESSIONID=${storedSessionId}` } : {})
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/listings/${id}`, {
+      const response = await fetch(`${getApiUrl()}/api/listings/${id}`, {
         headers: headers,
         credentials: 'include'
       });
@@ -111,7 +109,7 @@ const ListingDetailScreen = () => {
   // Fix image URL if needed
   let imageUrl = listing.imageUrl;
   if (imageUrl && !imageUrl.startsWith('http')) {
-    imageUrl = `${API_BASE_URL}${imageUrl}`;
+    imageUrl = `${getApiUrl()}${imageUrl}`;
   }
 
   return (

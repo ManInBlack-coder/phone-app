@@ -5,11 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
 import { Ionicons } from '@expo/vector-icons';
+import { getApiUrl } from '../utils/apiUtils';
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-// API base URL
-const API_BASE_URL = 'http://192.168.1.71:8080';
 
 export default function SignInScreen() {
   const navigation = useNavigation<SignInScreenNavigationProp>();
@@ -20,11 +19,13 @@ export default function SignInScreen() {
 
   const handleSignIn = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/signin`, {
+      const response = await fetch(`${getApiUrl()}/api/auth/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email,
           password,

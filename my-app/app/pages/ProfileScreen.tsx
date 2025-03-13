@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../utils/apiUtils';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -14,8 +15,7 @@ interface UserProfile {
   email: string;
 }
 
-// API base URL
-const API_BASE_URL = 'http://192.168.1.71:8080';
+
 
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
       const password = await AsyncStorage.getItem('userPassword');
       const sessionId = await AsyncStorage.getItem('sessionId');
 
-      const response = await fetch(`${API_BASE_URL}/api/users/profile/${encodeURIComponent(userEmail)}`, {
+      const response = await fetch(`${getApiUrl()}/api/users/profile/${encodeURIComponent(userEmail)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

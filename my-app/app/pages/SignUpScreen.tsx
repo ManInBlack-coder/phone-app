@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
 import { Ionicons } from '@expo/vector-icons';
+import { getApiUrl } from '../utils/apiUtils';
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 
@@ -17,7 +18,7 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     try {
-      const response = await fetch('http://192.168.1.71:8080/api/auth/signup', {
+      const response = await fetch(`${getApiUrl()}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

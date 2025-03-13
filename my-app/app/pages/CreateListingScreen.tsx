@@ -13,9 +13,9 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../utils/apiUtils';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-// API base URL
-const API_BASE_URL = 'http://192.168.1.71:8080';
 
 const categories = [
   'Electronics',
@@ -77,7 +77,7 @@ export default function CreateListingScreen() {
       const authHeader = `Basic ${btoa(`${userEmail}:${password}`)}`;
 
       // Get user_id first
-      const userResponse = await fetch(`${API_BASE_URL}/api/users/profile/${encodeURIComponent(userEmail)}`, {
+      const userResponse = await fetch(`${getApiUrl()}/api/users/profile/${encodeURIComponent(userEmail)}`, {
         headers: {
           'Authorization': authHeader,
           'Accept': 'application/json',
@@ -114,7 +114,7 @@ export default function CreateListingScreen() {
         formData.append('image', file as any);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/listings/create`, {
+      const response = await fetch(`${getApiUrl()}/api/listings/create`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
