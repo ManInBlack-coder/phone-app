@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/hooks/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../utils/apiUtils';
+import MyListingsScreen from './MyListingsScreen';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -13,6 +14,7 @@ interface UserProfile {
   id: number;
   nimi: string;
   email: string;
+  listings: Array<{ id: number; title: string; price: string }>;
 }
 
 
@@ -20,6 +22,7 @@ interface UserProfile {
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
 
   useEffect(() => {
     fetchUserProfile();
@@ -90,7 +93,7 @@ export default function ProfileScreen() {
       <Pressable style={styles.section} onPress={() => navigation.navigate('MyListings')}>
         <View style={styles.sectionContent}>
           <Text style={styles.sectionTitle}>My Listings</Text>
-          <Text style={styles.sectionSubtitle}>Already have 10 listing</Text>
+          <Text style={styles.sectionSubtitle}>Already have that much listings</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="#4B5FBD" />
       </Pressable>

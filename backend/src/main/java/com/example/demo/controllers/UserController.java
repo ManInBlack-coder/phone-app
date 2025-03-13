@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.models.Kuulutus;
 import com.example.demo.models.User;
 import com.example.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,17 @@ public class UserController {
             return ResponseEntity.ok(user);
         }
         System.out.println("User not found for email: " + email);
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/listings/{userEmail}")
+    public ResponseEntity<List<Kuulutus>> getUserListings(@PathVariable String userEmail) {
+        System.out.println("Fetching listings for email: " + userEmail);
+        List<Kuulutus> listings = userService.findKuulutusByUserEmail(userEmail);
+        if (listings != null && !listings.isEmpty()) {
+            return ResponseEntity.ok(listings);
+        }
+        System.out.println("No listings found for email: " + userEmail);
         return ResponseEntity.notFound().build();
     }
 } 

@@ -1,7 +1,9 @@
 package com.example.demo.services;
 
 import com.example.demo.models.User;
+import com.example.demo.models.Kuulutus;
 import com.example.demo.Repository.UserRepository;
+import com.example.demo.Repository.KuulutusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private KuulutusRepository kuulutusRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -39,6 +44,10 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public List<Kuulutus> findKuulutusByUserEmail(String userEmail) {
+        return kuulutusRepository.findByUserEmail(userEmail);
     }
 
     public List<User> findAllUsers() {

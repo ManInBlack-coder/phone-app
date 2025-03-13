@@ -9,6 +9,7 @@ import ProfileScreen from '../pages/ProfileScreen';
 import CreateListingScreen from '../pages/CreateListingScreen';
 import ListingDetailScreen from '../pages/ListingDetailScreen';
 import { RootStackParamList } from '@/hooks/types';
+import MyListingsScreen from '../pages/MyListingsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -57,6 +58,13 @@ export default function App() {
       <Stack.Screen 
         name="Profile" 
         component={ProfileScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen 
+        name="MyListings" 
+        component={MyListingsScreen}
         options={{
           headerShown: false
         }}
