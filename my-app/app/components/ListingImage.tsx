@@ -3,15 +3,15 @@ import { View, Image, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { getApiUrl } from '../utils/apiUtils';
 
 interface ListingImageProps {
-  imageUrl: string | null;
+  imageUrls: string[];
   sessionId: string | null;
 }
 
-const ListingImage: React.FC<ListingImageProps> = ({ imageUrl, sessionId }) => {
+const ListingImage: React.FC<ListingImageProps> = ({ imageUrls, sessionId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  if (!imageUrl) {
+  if (!imageUrls || imageUrls.length === 0) {
     return (
       <View style={styles.imagePlaceholder}>
         <ActivityIndicator size="large" color="#4B5FBD" />
@@ -19,31 +19,36 @@ const ListingImage: React.FC<ListingImageProps> = ({ imageUrl, sessionId }) => {
     );
   }
 
-  // Paranda URL, kui see on vale
-  let fixedUrl = imageUrl;
-  if (!imageUrl.startsWith('http')) {
-    fixedUrl = `${getApiUrl()}${imageUrl}`;
-  }
-
   return (
     <View style={styles.imageContainer}>
-      <Image 
-        source={{ 
-          uri: fixedUrl,
-          headers: {
-            'Accept': 'image/*',
-            ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
-          }
-        }}
-        style={styles.image}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
-        onError={(e) => {
-          console.error('Error loading image:', e.nativeEvent.error);
-          setError(e.nativeEvent.error);
-          setIsLoading(false);
-        }}
-      />
+      {imageUrls.map((imageUrl, index) => {
+        // Paranda URL, kui see on vale
+        let fixedUrl = imageUrl;
+        if (!imageUrl.startsWith('http')) {
+          fixedUrl = `${getApiUrl()}${imageUrl}`;
+        }
+
+        return (
+          <Image 
+            key={index}
+            source={{ 
+              uri: fixedUrl,
+              headers: {
+                'Accept': 'image/*',
+                ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
+              }
+            }}
+            style={styles.image}
+            onLoadStart={() => setIsLoading(true)}
+            onLoadEnd={() => setIsLoading(false)}
+            onError={(e) => {
+              console.error('Error loading image:', e.nativeEvent.error);
+              setError(e.nativeEvent.error);
+              setIsLoading(false);
+            }}
+          />
+        );
+      })}
       {isLoading && (
         <View style={styles.imagePlaceholder}>
           <ActivityIndicator size="large" color="#4B5FBD" />

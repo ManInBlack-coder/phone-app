@@ -53,7 +53,7 @@ const MyListingsScreen = () => {
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.listingItem}>
-      <ListingImage imageUrl={item.imageUrl} sessionId={null} />
+      <ListingImage imageUrls={item.imageUrls} sessionId={null} />
      
      <View style={styles.listingDetails}>
           <Text style={styles.listingTitle}>{item.title}</Text>

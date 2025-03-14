@@ -98,9 +98,8 @@ export default function CreateListingScreen() {
       formData.append('description', description);
       formData.append('user_id', userData.id);
 
-      // Append image if exists
-      if (images.length > 0) {
-        const imageUri = images[0];
+      // Append all images if they exist
+      images.forEach((imageUri) => {
         const filename = imageUri.split('/').pop() || 'image.jpg';
         
         // Create file object from URI
@@ -111,8 +110,12 @@ export default function CreateListingScreen() {
         };
 
         // Append image with specific field name
-        formData.append('image', file as any);
-      }
+        formData.append('images', {
+          uri: file.uri,
+          type: file.type,
+          name: file.name,
+        } as any); // Cast to 'any' to bypass TypeScript error
+      });
 
       const response = await fetch(`${getApiUrl()}/api/listings/create`, {
         method: 'POST',

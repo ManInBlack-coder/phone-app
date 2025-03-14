@@ -14,7 +14,8 @@ interface Listing {
   id: number;
   title: string;
   price: number;
-  imageUrl: string;  // Changed from image_url to match the backend response
+  imageUrl: string; 
+  imageUrls: string[]; // Changed from image_url to match the backend response
   category: string;
   description?: string;
 }
@@ -111,39 +112,19 @@ const ListingDetailScreen = () => {
   if (imageUrl && !imageUrl.startsWith('http')) {
     imageUrl = `${getApiUrl()}${imageUrl}`;
   }
+  console.log('imageUrl: ',imageUrl);
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ 
-              uri: imageUrl,
-              headers: {
-                'Accept': 'image/*',
-                ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
-              }
-            }}
-            style={styles.image}
-            onLoadStart={() => setImageLoading(true)}
-            onLoadEnd={() => setImageLoading(false)}
-            onError={(e) => {
-              console.error('Error loading image:', e.nativeEvent.error);
-              setImageError(e.nativeEvent.error);
-              setImageLoading(false);
-            }}
-          />
-          {imageLoading && (
-            <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
-              <ActivityIndicator size="large" color="#4B5FBD" />
-            </View>
-          )}
-          {imageError && !imageLoading && (
-            <View style={[styles.imagePlaceholder, StyleSheet.absoluteFill]}>
-              <Ionicons name="image-outline" size={40} color="#8E8E93" />
-              <Text style={styles.imageErrorText}>Failed to load image</Text>
-            </View>
-          )}
+          {listing.imageUrls.map((imageUrl, index) => (
+            <Image 
+              key={index}
+              source={{ uri: imageUrl }}
+              style={styles.image}
+            />
+          ))}
         </View>
         
         <View style={styles.contentContainer}>
@@ -278,6 +259,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  carouselContainer: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
   },
 });
 

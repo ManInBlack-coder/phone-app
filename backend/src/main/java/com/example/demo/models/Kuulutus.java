@@ -2,6 +2,8 @@ package com.example.demo.models;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "kuulutus")
@@ -19,8 +21,10 @@ public class Kuulutus {
     @Column(nullable = false)
     private String category;
 
+    @ElementCollection
+    @CollectionTable(name = "kuulutus_images", joinColumns = @JoinColumn(name = "kuulutus_id"))
     @Column(name = "image_url")
-    private String imageUrl;
+    private List<String> imageUrls = new ArrayList<>();
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -62,12 +66,16 @@ public class Kuulutus {
         this.category = category;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public List<String> getImageUrls() {
+        return imageUrls;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+     // Add this method
+     public void addImageUrl(String imageUrl) {
+        this.imageUrls.add(imageUrl);
     }
 
     public String getDescription() {

@@ -32,7 +32,9 @@ interface Listing {
   title: string;
   price: number;
   imageUrl: string;
+  imageUrls: string[];
   category: string;
+  description?: string;
 }
 
 const ListingImage = ({ imageUrl, sessionId }: { imageUrl: string | null, sessionId: string | null }) => {
@@ -107,68 +109,22 @@ const ListingsTab = () => {
 
   const fetchListings = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem('token');
-      const storedSessionId = await AsyncStorage.getItem('sessionId');
-      const email = await AsyncStorage.getItem('userEmail');
-      const password = await AsyncStorage.getItem('userPassword');
-      console.log('Stored token:', storedToken);
-      console.log('Stored session ID:', storedSessionId);
-      console.log('Stored email:', email);
-      
-      const headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        ...(email && password ? { 
-          'Authorization': `Basic ${btoa(`${email}:${password}`)}` 
-        } : {}),
-        ...(storedSessionId ? { 'Cookie': `JSESSIONID=${storedSessionId}` } : {})
-      };
-      
-      console.log('Request headers:', headers);
-      
       const response = await fetch(`${getApiUrl()}/api/listings`, {
         method: 'GET',
         credentials: 'include',
-        headers: headers
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setListings(data);
-        
-        // Log all response headers
-        const allHeaders: Record<string, string> = {};
-        response.headers.forEach((value: string, key: string) => {
-          allHeaders[key] = value;
-        });
-        
-        // Save session ID from response headers
-        const setCookieHeader = response.headers.get('set-cookie');
-        console.log('Listings fetch Set-Cookie:', setCookieHeader);
-        
-        if (setCookieHeader) {
-          const sessionId = extractSessionId(setCookieHeader);
-          if (sessionId) {
-            await AsyncStorage.setItem('sessionId', sessionId);
-            setSessionId(sessionId);
-          }
-        }
 
-        // Update token if it's in the response
-        const authHeader = response.headers.get('Authorization');
-        if (authHeader) {
-          const tokenMatch = authHeader.match(/Bearer\s+(.+)/);
-          if (tokenMatch && tokenMatch[1]) {
-            console.log('New token from listings:', tokenMatch[1]);
-            await AsyncStorage.setItem('token', tokenMatch[1]);
-            setToken(tokenMatch[1]);
-          }
-        }
-      } else {
-        console.error('Failed to fetch listings:', response.status);
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log('fetched listings data: ',data);
+      setListings(data);
     } catch (error) {
       console.error('Error fetching listings:', error);
     }
@@ -201,20 +157,23 @@ const ListingsTab = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Listing }) => {
-    // Use the image URL directly from the backend, which should be a complete Supabase URL
-    const imageUrl = item.imageUrl || null;
-    
+    // Logige kogu item, et näha, millised andmed on saadaval
+    console.log('Fetched item:', item);
+
+    // Oletame, et item.imageUrls on massiiv
+    const imageUrl = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null;
+
     return (
-      <TouchableOpacity 
-        style={styles.listingCard}
-        onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
-      >
-        <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
-        <View style={styles.listingInfo}>
-          <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
-          <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
-        </View>
-      </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.listingCard}
+            onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
+        >
+            <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
+            <View style={styles.listingInfo}>
+                <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
+                <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
+            </View>
+        </TouchableOpacity>
     );
   };
 

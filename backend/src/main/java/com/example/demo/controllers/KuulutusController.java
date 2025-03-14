@@ -1,9 +1,11 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.Kuulutus;
+import com.example.demo.models.KuulutusImage;
 import com.example.demo.models.User;
 import com.example.demo.Repository.KuulutusRepository;
 import com.example.demo.Repository.UserRepository;
+import com.example.demo.Repository.KuulutusImageRepository;
 import com.example.demo.services.SupabaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/listings")
-@CrossOrigin(origins = {"http://localhost:19006", "http://10.15.16.201:19006"})
+@CrossOrigin(origins = {"http://localhost:19006", "http://10.15.16.201:19006"}, allowCredentials = "true")
 public class KuulutusController {
 
     @Autowired
@@ -37,6 +39,9 @@ public class KuulutusController {
     @Autowired
     private SupabaseStorageService supabaseStorageService;
 
+    @Autowired
+    private KuulutusImageRepository kuulutusImageRepository;
+
     @Value("${upload.path:/uploads}")
     private String uploadPath;
 
@@ -47,7 +52,7 @@ public class KuulutusController {
             @RequestParam("category") String category,
             @RequestParam("description") String description,
             @RequestParam("user_id") Integer userId,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         
         Map<String, Object> response = new HashMap<>();
         try {
@@ -61,14 +66,21 @@ public class KuulutusController {
             kuulutus.setDescription(description);
             kuulutus.setUser(user);
 
-            // Handle image upload to Supabase
-            if (image != null) {
-                String imageUrl = supabaseStorageService.uploadFile(image);
-                kuulutus.setImageUrl(imageUrl);
+            // Salvestage kuulutus enne piltide lisamist
+            Kuulutus savedKuulutus = kuulutusRepository.save(kuulutus);
+
+            // Handle multiple images
+            if (images != null) {
+                for (MultipartFile image : images) {
+                    String imageUrl = supabaseStorageService.uploadFile(image);
+                    System.out.println("Uploaded image URL: " + imageUrl);
+                    KuulutusImage kuulutusImage = new KuulutusImage();
+                    kuulutusImage.setImageUrl(imageUrl);
+                    kuulutusImage.setKuulutus(savedKuulutus); // Seosta salvestatud kuulutusega
+                    kuulutusImageRepository.save(kuulutusImage); // Salvestage pildi objekt
+                }
             }
 
-            Kuulutus savedKuulutus = kuulutusRepository.save(kuulutus);
-            
             response.put("success", true);
             response.put("message", "Listing created successfully");
             response.put("kuulutus", savedKuulutus);
@@ -130,19 +142,22 @@ public class KuulutusController {
 
             // Handle image update using Supabase
             if (image != null) {
-                // Delete old image if exists
-                if (kuulutus.getImageUrl() != null) {
+                // Delete old images if they exist
+                if (kuulutus.getImageUrls() != null && !kuulutus.getImageUrls().isEmpty()) {
                     try {
-                        supabaseStorageService.deleteFile(kuulutus.getImageUrl());
+                        for (String imageUrl : kuulutus.getImageUrls()) {
+                            supabaseStorageService.deleteFile(imageUrl);
+                        }
                     } catch (IOException e) {
                         // Log error but continue
-                        System.err.println("Failed to delete old image: " + e.getMessage());
+                        System.err.println("Failed to delete old images: " + e.getMessage());
                     }
                 }
                 
                 // Upload new image
                 String imageUrl = supabaseStorageService.uploadFile(image);
-                kuulutus.setImageUrl(imageUrl);
+                System.out.println("Uploaded image URL: " + imageUrl);
+                kuulutus.addImageUrl(imageUrl);
             }
 
             Kuulutus updatedKuulutus = kuulutusRepository.save(kuulutus);
@@ -171,13 +186,15 @@ public class KuulutusController {
                 throw new RuntimeException("Not authorized to delete this listing");
             }
 
-            // Delete image from Supabase if exists
-            if (kuulutus.getImageUrl() != null) {
+            // Delete images from Supabase if exists
+            if (kuulutus.getImageUrls() != null && !kuulutus.getImageUrls().isEmpty()) {
                 try {
-                    supabaseStorageService.deleteFile(kuulutus.getImageUrl());
+                    for (String imageUrl : kuulutus.getImageUrls()) {
+                        supabaseStorageService.deleteFile(imageUrl);
+                    }
                 } catch (IOException e) {
                     // Log error but continue with deletion
-                    System.err.println("Failed to delete image: " + e.getMessage());
+                    System.err.println("Failed to delete images: " + e.getMessage());
                 }
             }
 
@@ -201,17 +218,19 @@ public class KuulutusController {
             int fixedCount = 0;
             
             for (Kuulutus kuulutus : kuulutused) {
-                String imageUrl = kuulutus.getImageUrl();
-                if (imageUrl != null && (imageUrl.contains("http:/") && imageUrl.contains("https:/"))) {
-                    // Extract the Supabase part of the URL
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("https://isgqnyhkexduycwmcjxa\\.supabase\\.co/storage/v1/object/public/listings/[^/]+\\.[a-zA-Z0-9]+");
-                    java.util.regex.Matcher matcher = pattern.matcher(imageUrl);
-                    
-                    if (matcher.find()) {
-                        String fixedUrl = matcher.group(0);
-                        kuulutus.setImageUrl(fixedUrl);
-                        kuulutusRepository.save(kuulutus);
-                        fixedCount++;
+                List<String> imageUrls = kuulutus.getImageUrls();
+                for (String imageUrl : imageUrls) {
+                    if (imageUrl != null && (imageUrl.contains("http:/") && imageUrl.contains("https:/"))) {
+                        // Extract the Supabase part of the URL
+                        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("https://isgqnyhkexduycwmcjxa\\.supabase\\.co/storage/v1/object/public/listings/[^/]+\\.[a-zA-Z0-9]+");
+                        java.util.regex.Matcher matcher = pattern.matcher(imageUrl);
+                        
+                        if (matcher.find()) {
+                            String fixedUrl = matcher.group(0);
+                            kuulutus.addImageUrl(fixedUrl);
+                            kuulutusRepository.save(kuulutus);
+                            fixedCount++;
+                        }
                     }
                 }
             }
