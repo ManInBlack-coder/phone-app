@@ -32,6 +32,34 @@ const LikedListings = () => {
         fetchLikedListings();
     }, []);
 
+    const deleteLike = async (listingId: number) => {
+        const userId = await AsyncStorage.getItem('userId');
+        if (userId) {
+            try {
+                const response = await fetch(`${getApiUrl()}/api/listings/unlike`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        kuulutusId: listingId,
+                    }),
+                });
+
+                if (response.ok) {
+                    setLikedListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
+                    console.log('Like deleted successfully');
+                } else {
+                    const errorData = await response.json();
+                    console.error('Failed to delete like:', errorData);
+                }
+            } catch (error) {
+                console.error('Error deleting like:', error);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -54,18 +82,18 @@ const LikedListings = () => {
                         )}
                         <View style={styles.listingInfo}>
                             <Text style={styles.title}>{item.title}</Text>
-                        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-                       
-                       
+                            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
                         </View>
-                        <View style={styles.backButton}>
-                            <Ionicons style={styles.backButton} name="trash" size={24} color="black" />
-                        </View>
+                        <TouchableOpacity 
+                            style={styles.backButton} 
+                            onPress={() => deleteLike(item.id)}
+                        >
+                            <Ionicons name="trash" size={24} color="black" />
+                        </TouchableOpacity>
                     </TouchableOpacity>
                 )}
                 keyExtractor={(item) => item.id.toString()}
             />
-           
         </View>
     );
 };
@@ -85,7 +113,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         flexDirection: 'row',
-        alignItems: 'center',
         backgroundColor: '#f5f5f5',
         borderColor: '#000000',
         borderRadius: 10,
@@ -115,7 +142,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingLeft: 10,
         flexDirection: 'column',
-        },
+    },
     backButton: {
         marginLeft: 0,
         alignSelf: 'flex-end',

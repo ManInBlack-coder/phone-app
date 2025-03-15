@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface KuulutusRepository extends JpaRepository<Kuulutus, Integer> {
+public interface KuulutusRepository extends JpaRepository<Kuulutus, Long> {
     List<Kuulutus> findByUserEmail(String userEmail);
     List<Kuulutus> findByUserId(Integer userId);
     List<Kuulutus> findLikedKuulutusedByUserId(Integer userId);

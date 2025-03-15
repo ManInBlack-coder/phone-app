@@ -44,6 +44,7 @@ const ListingDetailScreen = () => {
     };
     getSessionId();
     fetchListingDetails();
+    checkIfBookmarked();
   }, [id]);
 
   const fetchListingDetails = async () => {
@@ -79,35 +80,35 @@ const ListingDetailScreen = () => {
     }
   };
 
-  const toggleBookmark = async () => {
-    setIsBookmarked(!isBookmarked);
+  const checkIfBookmarked = async () => {
     const userId = await AsyncStorage.getItem('userId');
-    console.log('Retrieved userId:', userId);
+    if (userId) {
+      const response = await fetch(`${getApiUrl()}/api/listings/liked/${userId}`);
+      if (response.ok) {
+        const likedListings = await response.json();
+        const isLiked = likedListings.some((liked: Listing) => liked.id === id);
+        setIsBookmarked(isLiked);
+      }
+    }
+  };
 
+  const toggleBookmark = async () => {
+    const userId = await AsyncStorage.getItem('userId');
     if (userId && listing) {
-        const response = await fetch(`${getApiUrl()}/api/listings/like`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: parseInt(userId),
-                kuulutusId: listing.id,
-            }),
-        });
+      const response = await fetch(`${getApiUrl()}/api/listings/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: parseInt(userId),
+          kuulutusId: listing.id,
+        }),
+      });
 
-        // Log the response status and body
-        console.log('Response Status:', response.status);
-        const responseBody = await response.json();
-        console.log('Response Body:', responseBody);
-
-        if (response.ok) {
-            console.log(isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
-        } else {
-            console.error('Failed to like listing:', responseBody.message || 'Unknown error');
-        }
-    } else {
-        console.error('User ID or listing is null');
+      if (response.ok) {
+        setIsBookmarked(!isBookmarked);
+      }
     }
   };
 

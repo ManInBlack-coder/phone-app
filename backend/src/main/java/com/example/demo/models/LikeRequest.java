@@ -1,26 +1,26 @@
 package com.example.demo.models;
 
 public class LikeRequest {
-    private Integer userId;
-    private Integer kuulutusId;
+    private Long userId;
+    private Long kuulutusId;
 
     // Getter for userId
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
     // Setter for userId
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
     // Getter for kuulutusId
-    public Integer getKuulutusId() {
+    public Long getKuulutusId() {
         return kuulutusId;
     }
 
     // Setter for kuulutusId
-    public void setKuulutusId(Integer kuulutusId) {
+    public void setKuulutusId(Long kuulutusId) {
         this.kuulutusId = kuulutusId;
     }
 }

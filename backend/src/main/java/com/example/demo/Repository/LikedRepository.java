@@ -17,4 +17,7 @@ public interface LikedRepository extends JpaRepository<Liked, Long> {
     // New method to fetch Kuulutus based on liked entries
     @Query("SELECT k FROM Kuulutus k JOIN Liked l ON k.id = l.kuulutusId WHERE l.userId = :userId")
     List<Kuulutus> findKuulutusByUserId(@Param("userId") Long userId);
+
+    // Add this method
+    Liked findByUserIdAndKuulutusId(Long userId, Long kuulutusId);
 } 

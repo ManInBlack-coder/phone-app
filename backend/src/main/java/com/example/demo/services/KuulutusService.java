@@ -24,7 +24,7 @@ public class KuulutusService {
         return kuulutusRepository.save(kuulutus);
     }
 
-    public Kuulutus getKuulutus(Integer id) {
+    public Kuulutus getKuulutus(Long id) {
         return kuulutusRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Kuulutus not found"));
     }

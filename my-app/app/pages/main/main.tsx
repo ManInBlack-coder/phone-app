@@ -20,7 +20,7 @@ interface Category {
 
 
 const categories: Category[] = [
-  { id: 'popular', name: 'Popular', icon: 'star' },
+  { id: 'popular', name: 'All', icon: 'star' },
   { id: 'chair', name: 'Chair', icon: 'grid' },
   { id: 'table', name: 'Table', icon: 'square' },
   { id: 'armchair', name: 'Armchair', icon: 'cube' },

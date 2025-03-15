@@ -16,12 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+// import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+// import java.nio.file.Files;
+// import java.nio.file.Path;
+// import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +116,7 @@ public class KuulutusController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Kuulutus> getKuulutusById(@PathVariable Integer id) {
+    public ResponseEntity<Kuulutus> getKuulutusById(@PathVariable Long id) {
         return kuulutusRepository.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
@@ -124,12 +124,12 @@ public class KuulutusController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateKuulutus(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) BigDecimal price,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String description,
-            @RequestParam Integer userId,
+            @RequestParam Long userId,
             @RequestParam(value = "image", required = false) MultipartFile image) {
         
         Map<String, Object> response = new HashMap<>();
@@ -181,8 +181,8 @@ public class KuulutusController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deleteKuulutus(
-            @PathVariable Integer id,
-            @RequestParam Integer userId) {
+            @PathVariable Long id,
+            @RequestParam Long userId) {
         Map<String, Object> response = new HashMap<>();
         try {
             Kuulutus kuulutus = kuulutusRepository.findById(id)
@@ -259,8 +259,8 @@ public class KuulutusController {
     public ResponseEntity<Map<String, Object>> likeKuulutus(@RequestBody LikeRequest likeRequest) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Integer userId = likeRequest.getUserId();
-            Integer kuulutusId = likeRequest.getKuulutusId();
+            Long userId = likeRequest.getUserId();
+            Long kuulutusId = likeRequest.getKuulutusId();
 
             // Check if the listing exists
             Kuulutus kuulutus = kuulutusRepository.findById(kuulutusId)
@@ -268,8 +268,8 @@ public class KuulutusController {
 
             // Add to liked
             Liked liked = new Liked();
-            liked.setUserId(Long.valueOf(userId));
-            liked.setKuulutusId(Long.valueOf(kuulutusId));
+            liked.setUserId(userId);
+            liked.setKuulutusId(kuulutusId);
             likedRepository.save(liked);
 
             response.put("success", true);
@@ -288,5 +288,30 @@ public class KuulutusController {
     public ResponseEntity<List<Kuulutus>> getLikedKuulutused(@PathVariable Long userId) {
         List<Kuulutus> likedKuulutused = likedRepository.findKuulutusByUserId(userId);
         return ResponseEntity.ok(likedKuulutused);
+    }
+
+    @DeleteMapping("/unlike")
+    public ResponseEntity<Map<String, Object>> unlikeKuulutus(@RequestBody LikeRequest likeRequest) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = likeRequest.getUserId();
+            Long kuulutusId = likeRequest.getKuulutusId();
+
+            // Check if liked entry exists
+            Liked liked = likedRepository.findByUserIdAndKuulutusId(userId, kuulutusId);
+            if (liked != null) {
+                likedRepository.delete(liked);
+                response.put("success", true);
+                response.put("message", "Like removed successfully");
+            } else {
+                response.put("success", false);
+                response.put("message", "Like not found");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 } 
