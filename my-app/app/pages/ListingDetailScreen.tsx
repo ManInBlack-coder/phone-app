@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, FlatList } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '@/hooks/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -113,26 +113,27 @@ const ListingDetailScreen = () => {
     imageUrl = `${getApiUrl()}${imageUrl}`;
   }
   console.log('imageUrl: ',imageUrl);
+  console.log('Image URLs:', listing.imageUrls);
 
   return (
     <View style={styles.container}>
-       
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
-          
-          {listing.imageUrls.map((imageUrl, index) => (
-            <Image 
-            
-              key={index}
-              source={{ uri: imageUrl }}
-              style={styles.image}
-            />  
-          ))}
+          <FlatList
+            data={listing.imageUrls}
+            renderItem={({ item }) => (
+              <Image 
+                source={{ uri: item }}
+                style={styles.image}
+              />
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />
         </View>
         
         <View style={styles.contentContainer}>
-  
-
           <View style={styles.header}>
             <Text style={styles.title}>{listing.title}</Text>
             <Text style={styles.price}>$ {listing.price.toFixed(2)}</Text>
@@ -209,8 +210,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: windowWidth,
+    height: windowWidth,
+    resizeMode: 'cover',
   },
   imagePlaceholder: {
     justifyContent: 'center',

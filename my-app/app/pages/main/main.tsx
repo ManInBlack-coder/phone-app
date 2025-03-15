@@ -303,10 +303,11 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 8,
     marginTop: 8,
+   
   },
   searchIcon: {
     marginRight: 8,
@@ -318,7 +319,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoriesContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F5F5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.6,
+    shadowRadius: 9,
+    elevation: 3,
   },
   categoriesContent: {
     paddingHorizontal: 16,
@@ -355,6 +361,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: 16,
     paddingBottom: 70,
+    marginTop: 30,
   },
   row: {
     justifyContent: 'space-between',
