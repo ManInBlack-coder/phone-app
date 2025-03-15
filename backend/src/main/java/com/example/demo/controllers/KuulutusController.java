@@ -182,6 +182,9 @@ public class KuulutusController {
             Kuulutus kuulutus = kuulutusRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Listing not found"));
             
+            System.out.println("User ID: " + userId);
+            System.out.println("Listing User ID: " + kuulutus.getUser().getId());
+            
             if (!kuulutus.getUser().getId().equals(userId)) {
                 throw new RuntimeException("Not authorized to delete this listing");
             }

@@ -8,8 +8,16 @@ import ListingImage from '../components/ListingImage';
 
 import trashIcon from '../../assets/icons/Variant3.svg';
 
+interface Listing {
+  id: number;
+  title: string;
+  price: number;
+  imageUrls: string[];
+  // Add other properties as needed
+}
+
 const MyListingsScreen = () => {
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +59,36 @@ const MyListingsScreen = () => {
     fetchListings();
   }, []);
 
-  
+  const deleteListing = async (listingId: number) => {
+    const token = await AsyncStorage.getItem('token');
+    const userId = await AsyncStorage.getItem('userId');
+    console.log('User ID:', userId); // Kontrollige, kas userId on saadaval
+
+    if (!userId) {
+      setError('User ID not found. Please log in again.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${getApiUrl()}/api/listings/${listingId}?userId=${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        // Eemaldame kustutatud kuulutuse loendist
+        setListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Failed to delete listing.');
+      }
+    } catch (error) {
+      setError('An error occurred while deleting the listing.');
+    }
+  };
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.listingItem}>
@@ -62,7 +99,10 @@ const MyListingsScreen = () => {
         <Text style={styles.listingPrice}> $ {item.price} </Text>
       </View>
 
-      <TouchableOpacity style={styles.trashIcon}>
+      <TouchableOpacity 
+        style={styles.trashIcon} 
+        onPress={() => deleteListing(item.id)} // Kutsume deleteListing funktsiooni
+      >
         <Ionicons name="trash" size={24} color="#000000" />
       </TouchableOpacity>
     </View>

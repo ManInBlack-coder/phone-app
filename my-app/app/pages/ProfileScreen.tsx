@@ -31,46 +31,50 @@ export default function ProfileScreen() {
 
   const fetchUserProfile = async () => {
     try {
+      const sessionId = await AsyncStorage.getItem('sessionId');
       const userEmail = await AsyncStorage.getItem('userEmail');
+
+      console.log('Session ID from AsyncStorage:', sessionId);
+      console.log('User Email from AsyncStorage:', userEmail);
+
       if (!userEmail) {
         console.error('No user email found');
         navigation.navigate('SignIn');
         return;
       }
 
-      const password = await AsyncStorage.getItem('userPassword');
-      const sessionId = await AsyncStorage.getItem('sessionId');
-
-      const response = await fetch(`${getApiUrl()}/api/users/profile/${encodeURIComponent(userEmail)}`, {
+      const apiUrl = `${getApiUrl()}/api/users/profile/${userEmail}`;
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Basic ${btoa(`${userEmail}:${password}`)}`,
           ...(sessionId ? { 'Cookie': `JSESSIONID=${sessionId}` } : {})
         }
       });
 
       console.log('Profile response status:', response.status);
-      
+      const responseData = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        console.log('Profile data:', data);
-        setUserProfile(data);
+        setUserProfile(responseData);
       } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch user profile:', response.status, errorText);
-        navigation.navigate('SignIn');
+        console.error('Failed to fetch user profile:', response.status, responseData);
+        handleLogout();
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      navigation.navigate('SignIn');
+      handleLogout();
     }
   };
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userEmail');
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('sessionId');
+      await AsyncStorage.removeItem('userPassword');
       navigation.navigate('Home');
     } catch (error) {
       console.error('Error logging out:', error);

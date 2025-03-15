@@ -33,7 +33,7 @@ export default function SignInScreen() {
       });
 
       const data = await response.json();
-      console.log('Sign in response:', data);
+      console.log('Profile data:', data);
       console.log('Response headers:', response.headers);
 
       if (response.ok) {
@@ -55,7 +55,7 @@ export default function SignInScreen() {
         await AsyncStorage.setItem('userEmail', email);
         await AsyncStorage.setItem('userPassword', password);
         
-        // Check for token in different possible locations
+        // Log token
         const token = data.token || data.accessToken || data.jwt;
         console.log('Token from response:', token);
         
@@ -75,7 +75,15 @@ export default function SignInScreen() {
           }
         }
 
+        if (data.user) {
+          await AsyncStorage.setItem('userId', data.user.id.toString());
+          await AsyncStorage.setItem('userEmail', data.user.email);
+        } else {
+          console.error('User data is undefined');
+        }
+
         navigation.navigate('Main');
+        console.log('User authenticated:', data);
       } else {
         setError(data.message || 'Sign in failed');
       }

@@ -123,7 +123,7 @@ const ListingsTab = () => {
       }
 
       const data = await response.json();
-      console.log('fetched listings data: ',data);
+      //console.log('fetched listings data: ',data);
       setListings(data);
     } catch (error) {
       console.error('Error fetching listings:', error);
@@ -158,7 +158,7 @@ const ListingsTab = () => {
 
   const renderItem = ({ item }: { item: Listing }) => {
     // Logige kogu item, et näha, millised andmed on saadaval
-    console.log('Fetched item:', item);
+    //console.log('Fetched item:', item);
 
     // Oletame, et item.imageUrls on massiiv
     const imageUrl = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null;

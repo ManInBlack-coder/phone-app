@@ -38,9 +38,10 @@ public class AuthController {
             String email = request.get("email");
             String password = request.get("password");
 
-            userService.registerUser(username, email, password);
+            User user = userService.registerUser(username, email, password);
             response.put("success", true);
             response.put("message", "User registered successfully");
+            response.put("id", user.getId());
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             response.put("success", false);
@@ -61,6 +62,7 @@ public class AuthController {
             response.put("success", true);
             response.put("token", token);
             response.put("message", "Sign in successful");
+            response.put("user", user);
 
             String sessionId = httpRequest.getSession().getId();
 
@@ -76,7 +78,7 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile() {
+    public ResponseEntity<User> getUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userService.findByEmail(userEmail);
