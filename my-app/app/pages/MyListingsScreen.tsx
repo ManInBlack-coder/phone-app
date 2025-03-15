@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ListingImage from '../components/ListingImage';
 
+import trashIcon from '../../assets/icons/Variant3.svg';
+
 const MyListingsScreen = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,12 +56,15 @@ const MyListingsScreen = () => {
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.listingItem}>
       <ListingImage imageUrls={item.imageUrls} sessionId={null} />
-     
-     <View style={styles.listingDetails}>
-          <Text style={styles.listingTitle}>{item.title}</Text>
-          <Text style={styles.listingPrice}> $ {item.price} </Text>
-     </View>
-     
+      
+      <View style={styles.listingDetails}>
+        <Text style={styles.listingTitle}>{item.title}</Text>
+        <Text style={styles.listingPrice}> $ {item.price} </Text>
+      </View>
+
+      <TouchableOpacity style={styles.trashIcon}>
+        <Ionicons name="trash" size={24} color="#000000" />
+      </TouchableOpacity>
     </View>
   ); 
 
@@ -109,6 +114,7 @@ const styles = StyleSheet.create({
     color: '#4B5FBD',
   },
   listingItem: {
+    flexDirection: 'row',
     padding: 15,
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -121,11 +127,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
     elevation: 2,
-    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   listingDetails: {
     flexDirection: 'column',
-    marginLeft: 20,
+    marginLeft: 0,
   },
   listingTitle: {
     fontSize: 18,
@@ -159,6 +165,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#8a8a8a',
     marginTop: 20,
+  },
+  trashIcon: {
+    marginLeft: 0,
+    alignSelf: 'flex-end',
+    height: '100%',
   },
 });
 
