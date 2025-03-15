@@ -100,7 +100,7 @@ const ListingDetailScreen = () => {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Listing not found</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButtonContainer} onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -116,18 +116,23 @@ const ListingDetailScreen = () => {
 
   return (
     <View style={styles.container}>
+       
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
+          
           {listing.imageUrls.map((imageUrl, index) => (
             <Image 
+            
               key={index}
               source={{ uri: imageUrl }}
               style={styles.image}
-            />
+            />  
           ))}
         </View>
         
         <View style={styles.contentContainer}>
+  
+
           <View style={styles.header}>
             <Text style={styles.title}>{listing.title}</Text>
             <Text style={styles.price}>$ {listing.price.toFixed(2)}</Text>
@@ -184,6 +189,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 16,
     color: '#000',
+  },
+  backButtonContainer: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+    alignSelf: 'flex-start',
   },
   backButton: {
     fontSize: 16,

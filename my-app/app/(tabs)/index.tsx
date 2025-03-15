@@ -27,6 +27,7 @@ export default function App() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerShown: false
       }}
     >
       <Stack.Screen 
@@ -83,9 +84,19 @@ export default function App() {
         component={ListingDetailScreen}
         options={{
           headerShown: true,
-          headerTransparent: true,
+          headerTransparent: false,
           headerTitle: '',
-          headerTintColor: '#000',
+          headerTintColor: '#000000',
+          headerStyle: {
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            height: 100,
+            borderBottomWidth: 1, 
+            borderBottomColor: '#000000',
+          },
         }}
       />
       <Stack.Screen 
