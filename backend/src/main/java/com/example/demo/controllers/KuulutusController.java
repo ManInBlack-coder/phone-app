@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+// import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/listings")
@@ -265,6 +265,9 @@ public class KuulutusController {
             // Check if the listing exists
             Kuulutus kuulutus = kuulutusRepository.findById(kuulutusId)
                 .orElseThrow(() -> new RuntimeException("Kuulutus not found"));
+
+            // Optionally, you can log or use the kuulutus variable here
+            System.out.println("Liking listing: " + kuulutus.getTitle());
 
             // Add to liked
             Liked liked = new Liked();

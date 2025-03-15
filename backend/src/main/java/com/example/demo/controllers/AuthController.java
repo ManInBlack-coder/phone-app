@@ -97,13 +97,13 @@ public class AuthController {
                 .compact();
     }
 
-    private String extractSessionId(String setCookieHeader) {
-        String[] cookies = setCookieHeader.split(";");
-        for (String cookie : cookies) {
-            if (cookie.trim().startsWith("JSESSIONID=")) {
-                return cookie.split("=")[1];
-            }
-        }
-        return null;
-    }
+    // private String extractSessionId(String setCookieHeader) {
+    //     String[] cookies = setCookieHeader.split(";");
+    //     for (String cookie : cookies) {
+    //         if (cookie.trim().startsWith("JSESSIONID=")) {
+    //             return cookie.split("=")[1];
+    //         }
+    //     }
+    //     return null;
+    // }
 }
