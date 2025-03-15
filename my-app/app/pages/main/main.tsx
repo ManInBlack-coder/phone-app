@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import ProfileScreen from '../ProfileScreen';
-import { RootStackParamList } from '@/hooks/types';
+import { RootStackParamList } from '../../../hooks/types';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,12 +20,13 @@ interface Category {
 
 
 const categories: Category[] = [
-  { id: 'popular', name: 'All', icon: 'star' },
-  { id: 'chair', name: 'Chair', icon: 'grid' },
-  { id: 'table', name: 'Table', icon: 'square' },
-  { id: 'armchair', name: 'Armchair', icon: 'cube' },
-  { id: 'bed', name: 'Bed', icon: 'bed' },
-  { id: 'lamp', name: 'Lamp', icon: 'bulb' },
+  { id: 'Popular', name: 'All', icon: 'star' },
+  { id: 'Electronics', name: 'Electronics', icon: 'phone-portrait' },
+  { id: 'Furniture', name: 'Furniture', icon: 'chair-outline' },
+  { id: 'Clothing', name: 'Clothing', icon: 'shirt' },
+  { id: 'Books', name: 'Books', icon: 'book' },
+  { id: 'Sports', name: 'Sports', icon: 'basketball' },
+  { id: 'Other', name: 'Other', icon: 'ellipsis-horizontal' },
 ];
 
 interface Listing {
@@ -92,7 +93,7 @@ const ListingImage = ({ imageUrl, sessionId }: { imageUrl: string | null, sessio
 
 const ListingsTab = () => {
   const [listings, setListings] = useState<Listing[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('popular');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [token, setToken] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -110,7 +111,9 @@ const ListingsTab = () => {
 
   const fetchListings = async () => {
     try {
-      const response = await fetch(`${getApiUrl()}/api/listings`, {
+      const url = `${getApiUrl()}/api/listings/category/${selectedCategory}`;
+      console.log('Fetching from URL:', url);
+      const response = await fetch(url, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -124,27 +127,14 @@ const ListingsTab = () => {
       }
 
       const data = await response.json();
-      //console.log('fetched listings data: ',data);
+      console.log('Fetched listings data: ', data);
       setListings(data);
-      console.log('fetched listings data: ');
     } catch (error) {
-      console.log(null);
+      console.log('Error fetching listings:', error);
     }
-  };
-
-  // Uus meetod sessiooni ID väljavõtmiseks
-  const extractSessionId = (setCookieHeader: string) => {
-    const cookies = setCookieHeader.split(';');
-    for (const cookie of cookies) {
-      if (cookie.trim().startsWith('JSESSIONID=')) {
-        return cookie.split('=')[1];
-      }
-    }
-    return null;
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchListings();
 
     // Set up polling every 5 seconds
@@ -156,55 +146,24 @@ const ListingsTab = () => {
         clearInterval(pollingInterval.current);
       }
     };
-  }, []);
+  }, [selectedCategory]);
 
   const renderItem = ({ item }: { item: Listing }) => {
-    // Logige kogu item, et näha, millised andmed on saadaval
-    //console.log('Fetched item:', item);
-
-    // Oletame, et item.imageUrls on massiiv
     const imageUrl = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null;
 
     return (
-        <TouchableOpacity 
-            style={styles.listingCard}
-            onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
-        >
-            <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
-            <View style={styles.listingInfo}>
-                <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
-                <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
-            </View>
-        </TouchableOpacity>
+      <TouchableOpacity 
+          style={styles.listingCard}
+          onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
+      >
+          <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
+          <View style={styles.listingInfo}>
+              <Text style={styles.listingTitle} numberOfLines={1}>{item.title}</Text>
+              <Text style={styles.listingPrice}>${item.price.toFixed(2)}</Text>
+          </View>
+      </TouchableOpacity>
     );
   };
-
-  const renderCategory = ({ item }: { item: Category }) => (
-    <TouchableOpacity 
-      style={[
-        styles.categoryButton,
-        selectedCategory === item.id && styles.categoryButtonActive
-      ]}
-      onPress={() => setSelectedCategory(item.id)}
-    >
-      <View style={[
-        styles.categoryIcon,
-        selectedCategory === item.id && styles.categoryIconActive
-      ]}>
-        <Ionicons 
-          name={item.icon as any} 
-          size={24} 
-          color={selectedCategory === item.id ? '#fff' : '#000'} 
-        />
-      </View>
-      <Text style={[
-        styles.categoryText,
-        selectedCategory === item.id && styles.categoryTextActive
-      ]}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
@@ -223,7 +182,33 @@ const ListingsTab = () => {
       >
         {categories.map((category) => (
           <React.Fragment key={category.id}>
-            {renderCategory({ item: category })}
+            <TouchableOpacity 
+              style={[
+                styles.categoryButton,
+                selectedCategory === category.id && styles.categoryButtonActive
+              ]}
+              onPress={() => {
+                setSelectedCategory(category.id);
+                fetchListings();
+              }}
+            >
+              <View style={[
+                styles.categoryIcon,
+                selectedCategory === category.id && styles.categoryIconActive
+              ]}>
+                <Ionicons 
+                  name={category.icon as any} 
+                  size={24} 
+                  color={selectedCategory === category.id ? '#fff' : '#000'} 
+                />
+              </View>
+              <Text style={[
+                styles.categoryText,
+                selectedCategory === category.id && styles.categoryTextActive
+              ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
           </React.Fragment>
         ))}
       </ScrollView>

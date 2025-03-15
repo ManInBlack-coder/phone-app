@@ -12,6 +12,7 @@ export type RootStackParamList = {
   };
 
   
+  
 // Add a default export to satisfy React Navigation
 const Types = {};
 export default Types;

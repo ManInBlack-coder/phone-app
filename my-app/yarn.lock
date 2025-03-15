@@ -2055,6 +2055,11 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
+"@stomp/stompjs@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.npmjs.org/@stomp/stompjs/-/stompjs-7.0.1.tgz"
+  integrity sha512-qip3juB0JiInS70QSYVdgMoNLxbrRwDiYN5xx6b/RWcy/vSIUUZKLQOkSJTH2Z0x3rOvDHT/sPvs9gDJM32Yzg==
+
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.npmjs.org/@tootallnate/once/-/once-2.0.0.tgz"
