@@ -9,6 +9,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../../utils/apiUtils';
 import SettingsScreen from '../SettingsScreen';
+import LikedListings from '../likedListings';
 const Tab = createBottomTabNavigator();
 
 interface Category {
@@ -125,8 +126,9 @@ const ListingsTab = () => {
       const data = await response.json();
       //console.log('fetched listings data: ',data);
       setListings(data);
+      console.log('fetched listings data: ');
     } catch (error) {
-      console.error('Error fetching listings:', error);
+      console.log(null);
     }
   };
 
@@ -241,7 +243,8 @@ const ListingsTab = () => {
 
 const BookmarksTab = () => (
   <View style={styles.container}>
-    <Text style={styles.text}>Bookmarks</Text>
+    <Text style={styles.text}>Favorites</Text>
+    <LikedListings />
   </View>
 );
 
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 70,
+    paddingBottom: 470,
     marginTop: 30,
   },
   row: {
@@ -411,8 +414,9 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   text: {
-    fontSize: 16,
+    fontSize: 25,
     textAlign: 'center',
     marginTop: 20,
+    color: '#000000',
   },
 });

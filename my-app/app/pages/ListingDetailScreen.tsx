@@ -79,8 +79,36 @@ const ListingDetailScreen = () => {
     }
   };
 
-  const toggleBookmark = () => {
+  const toggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
+    const userId = await AsyncStorage.getItem('userId');
+    console.log('Retrieved userId:', userId);
+
+    if (userId && listing) {
+        const response = await fetch(`${getApiUrl()}/api/listings/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: parseInt(userId),
+                kuulutusId: listing.id,
+            }),
+        });
+
+        // Log the response status and body
+        console.log('Response Status:', response.status);
+        const responseBody = await response.json();
+        console.log('Response Body:', responseBody);
+
+        if (response.ok) {
+            console.log(isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+        } else {
+            console.error('Failed to like listing:', responseBody.message || 'Unknown error');
+        }
+    } else {
+        console.error('User ID or listing is null');
+    }
   };
 
   const handleContactSeller = () => {

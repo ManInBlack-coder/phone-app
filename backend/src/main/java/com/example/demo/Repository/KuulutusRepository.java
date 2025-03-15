@@ -9,4 +9,5 @@ import java.util.List;
 public interface KuulutusRepository extends JpaRepository<Kuulutus, Integer> {
     List<Kuulutus> findByUserEmail(String userEmail);
     List<Kuulutus> findByUserId(Integer userId);
+    List<Kuulutus> findLikedKuulutusedByUserId(Integer userId);
 } 

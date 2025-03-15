@@ -3,9 +3,12 @@ package com.example.demo.controllers;
 import com.example.demo.models.Kuulutus;
 import com.example.demo.models.KuulutusImage;
 import com.example.demo.models.User;
+import com.example.demo.models.Liked;
+import com.example.demo.models.LikeRequest;
 import com.example.demo.Repository.KuulutusRepository;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Repository.KuulutusImageRepository;
+import com.example.demo.Repository.LikedRepository;
 import com.example.demo.services.SupabaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +44,9 @@ public class KuulutusController {
 
     @Autowired
     private KuulutusImageRepository kuulutusImageRepository;
+
+    @Autowired
+    private LikedRepository likedRepository;
 
     @Value("${upload.path:/uploads}")
     private String uploadPath;
@@ -246,5 +252,41 @@ public class KuulutusController {
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // Likes a listing
+    @PostMapping("/like")
+    public ResponseEntity<Map<String, Object>> likeKuulutus(@RequestBody LikeRequest likeRequest) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Integer userId = likeRequest.getUserId();
+            Integer kuulutusId = likeRequest.getKuulutusId();
+
+            // Check if the listing exists
+            Kuulutus kuulutus = kuulutusRepository.findById(kuulutusId)
+                .orElseThrow(() -> new RuntimeException("Kuulutus not found"));
+
+            // Add to liked
+            Liked liked = new Liked();
+            liked.setUserId(Long.valueOf(userId));
+            liked.setKuulutusId(Long.valueOf(kuulutusId));
+            likedRepository.save(liked);
+
+            response.put("success", true);
+            response.put("message", "Listing liked successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+
+    // Get liked listings
+    @GetMapping("/liked/{userId}")
+    public ResponseEntity<List<Kuulutus>> getLikedKuulutused(@PathVariable Long userId) {
+        List<Kuulutus> likedKuulutused = likedRepository.findKuulutusByUserId(userId);
+        return ResponseEntity.ok(likedKuulutused);
     }
 } 
