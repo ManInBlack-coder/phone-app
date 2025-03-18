@@ -317,4 +317,20 @@ public class KuulutusController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<Kuulutus>> getKuulutusedByCategory(@PathVariable String category) {
+        System.out.println("Fetching listings for category: " + category);
+        
+        List<Kuulutus> kuulutused;
+        if (category.equalsIgnoreCase("All")) {
+            kuulutused = kuulutusRepository.findAll(); // Tagastab kõik kuulutused
+        } else {
+            kuulutused = kuulutusRepository.findByCategory(category);
+        }
+        
+        System.out.println("Listings found: " + kuulutused.size());
+        
+        return ResponseEntity.ok(kuulutused);
+    }
 } 

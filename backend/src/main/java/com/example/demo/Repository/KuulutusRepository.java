@@ -10,4 +10,5 @@ public interface KuulutusRepository extends JpaRepository<Kuulutus, Long> {
     List<Kuulutus> findByUserEmail(String userEmail);
     List<Kuulutus> findByUserId(Integer userId);
     List<Kuulutus> findLikedKuulutusedByUserId(Integer userId);
+    List<Kuulutus> findByCategory(String category);
 } 
