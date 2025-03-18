@@ -95,6 +95,7 @@ const ListingsTab = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [token, setToken] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const pollingInterval = useRef<NodeJS.Timeout>();
 
@@ -147,6 +148,10 @@ const ListingsTab = () => {
     };
   }, [selectedCategory]);
 
+  const filteredListings = listings.filter(listing =>
+    listing.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const renderItem = ({ item }: { item: Listing }) => {
     const imageUrl = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null;
 
@@ -169,7 +174,12 @@ const ListingsTab = () => {
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
-          <Text style={styles.searchPlaceholder}>Find All You Need</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Find All You Need"
+            value={searchQuery}
+            onChangeText={text => setSearchQuery(text)}
+          />
         </View>
       </View>
       
@@ -213,7 +223,7 @@ const ListingsTab = () => {
       </ScrollView>
 
       <FlatList
-        data={listings}
+        data={filteredListings}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
@@ -299,10 +309,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginLeft: 4,
   },
-  searchPlaceholder: {
+  searchInput: {
+    flex: 1,
     fontSize: 17,
     color: '#000',
-    fontWeight: '500',
+    padding: 8,
   },
   categoriesContainer: {
     backgroundColor: '#F5F5F5',
