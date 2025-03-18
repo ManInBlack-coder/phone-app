@@ -8,9 +8,22 @@ import MainScreen from '../pages/main/main';
 import ProfileScreen from '../pages/ProfileScreen';
 import CreateListingScreen from '../pages/CreateListingScreen';
 import ListingDetailScreen from '../pages/ListingDetailScreen';
-import { RootStackParamList } from '@/hooks/types';
 import MyListingsScreen from '../pages/MyListingsScreen';
 import SettingsScreen from '../pages/SettingsScreen';
+
+// Deklareeri RootStackParamList siin
+export type RootStackParamList = {
+    Home: undefined;
+    SignUp: undefined;
+    SignIn: undefined;
+    Main: undefined;
+    Profile: undefined;
+    MyListings: undefined;
+    AddListing: undefined; // Veendu, et see on olemas
+    ListingDetail: { id: string }; // Veendu, et see on olemas
+    Settings: undefined;
+    CreateListing: undefined;
+};
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -73,7 +86,7 @@ export default function App() {
         }}
       />
       <Stack.Screen 
-        name="AddListing" 
+        name="CreateListing" 
         component={CreateListingScreen}
         options={{
           headerShown: false
@@ -105,7 +118,7 @@ export default function App() {
         options={{
           headerShown: false
         }}
-        />
+      />
     </Stack.Navigator>
   );
 }

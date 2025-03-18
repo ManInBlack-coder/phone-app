@@ -14,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../utils/apiUtils';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 const categories = [
@@ -102,7 +101,6 @@ export default function CreateListingScreen() {
       images.forEach((imageUri) => {
         const filename = imageUri.split('/').pop() || 'image.jpg';
         
-        // Create file object from URI
         const file = {
           uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
           type: 'image/jpeg',
@@ -114,7 +112,7 @@ export default function CreateListingScreen() {
           uri: file.uri,
           type: file.type,
           name: file.name,
-        } as any); // Cast to 'any' to bypass TypeScript error
+        } as any); 
       });
 
       const response = await fetch(`${getApiUrl()}/api/listings/create`, {

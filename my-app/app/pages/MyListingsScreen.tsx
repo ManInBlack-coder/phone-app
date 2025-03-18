@@ -6,14 +6,11 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ListingImage from '../components/ListingImage';
 
-import trashIcon from '../../assets/icons/Variant3.svg';
-
 interface Listing {
   id: number;
   title: string;
   price: number;
   imageUrls: string[];
-  // Add other properties as needed
 }
 
 const MyListingsScreen = () => {
@@ -62,8 +59,7 @@ const MyListingsScreen = () => {
   const deleteListing = async (listingId: number) => {
     const token = await AsyncStorage.getItem('token');
     const userId = await AsyncStorage.getItem('userId');
-    console.log('User ID:', userId); // Kontrollige, kas userId on saadaval
-
+    console.log('User ID:', userId); 
     if (!userId) {
       setError('User ID not found. Please log in again.');
       return;
@@ -79,7 +75,6 @@ const MyListingsScreen = () => {
       });
 
       if (response.ok) {
-        // Eemaldame kustutatud kuulutuse loendist
         setListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
       } else {
         const data = await response.json();
@@ -101,7 +96,7 @@ const MyListingsScreen = () => {
 
       <TouchableOpacity 
         style={styles.trashIcon} 
-        onPress={() => deleteListing(item.id)} // Kutsume deleteListing funktsiooni
+        onPress={() => deleteListing(item.id)} 
       >
         <Ionicons name="trash" size={24} color="#000000" />
       </TouchableOpacity>

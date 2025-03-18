@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/hooks/types';
+import { RootStackParamList } from '../../hooks/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../utils/apiUtils';
-import MyListingsScreen from './MyListingsScreen';
 
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -113,7 +112,7 @@ export default function ProfileScreen() {
 
       <TouchableOpacity 
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddListing')}
+        onPress={() => navigation.navigate('CreateListing')}
       >
         <Text style={styles.addButtonText}>Add a new listing</Text>
       </TouchableOpacity>

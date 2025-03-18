@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../utils/apiUtils';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../hooks/types';
+import { RootStackParamList } from '../../hooks/types';
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 

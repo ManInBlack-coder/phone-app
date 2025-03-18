@@ -15,16 +15,12 @@ interface Listing {
   title: string;
   price: number;
   imageUrl: string; 
-  imageUrls: string[]; // Changed from image_url to match the backend response
+  imageUrls: string[]; 
   category: string;
   description?: string;
 }
 
-// Function to fix malformed image URLs
-const fixImageUrl = (imageUrl: string | null): string | null => {
-  if (!imageUrl) return null;
-  return imageUrl;
-};
+
 
 const ListingDetailScreen = () => {
   const route = useRoute<ListingDetailRouteProp>();
@@ -33,8 +29,6 @@ const ListingDetailScreen = () => {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [imageError, setImageError] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,7 +80,7 @@ const ListingDetailScreen = () => {
       const response = await fetch(`${getApiUrl()}/api/listings/liked/${userId}`);
       if (response.ok) {
         const likedListings = await response.json();
-        const isLiked = likedListings.some((liked: Listing) => liked.id === id);
+        const isLiked = likedListings.some((liked: Listing) => liked.id === parseInt(id));
         setIsBookmarked(isLiked);
       }
     }
@@ -113,7 +107,6 @@ const ListingDetailScreen = () => {
   };
 
   const handleContactSeller = () => {
-    // Implement contact seller functionality
     console.log('Contact seller for listing:', id);
   };
 

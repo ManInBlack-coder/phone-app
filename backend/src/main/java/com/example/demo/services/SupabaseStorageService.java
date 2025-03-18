@@ -9,8 +9,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-// import java.nio.file.Files;
-// import java.nio.file.Path;
 import java.util.UUID;
 
 @Service
@@ -27,11 +25,7 @@ public class SupabaseStorageService {
 
     private final HttpClient httpClient = HttpClient.newBuilder().build();
 
-    /**
-     * Upload a file to Supabase Storage
-     * @param file The file to upload
-     * @return The URL of the uploaded file
-     */
+  
     public String uploadFile(MultipartFile file) throws IOException {
         try {
             // Generate a unique filename
@@ -42,10 +36,10 @@ public class SupabaseStorageService {
             }
             String filename = UUID.randomUUID().toString() + extension;
             
-            // Create the URL for the upload
+            // Creates the URL for the upload
             String uploadUrl = String.format("%s/object/%s/%s", storageUrl, bucketName, filename);
             
-            // Create the request
+            // Creates the request
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(uploadUrl))
                     .header("Authorization", "Bearer " + supabaseKey)
@@ -53,10 +47,10 @@ public class SupabaseStorageService {
                     .PUT(HttpRequest.BodyPublishers.ofByteArray(file.getBytes()))
                     .build();
             
-            // Send the request
+            // Sends the request
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             
-            // Check if the upload was successful
+            // Checks if the upload was successful
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 // Return the public URL of the file
                 // Supabase public URL format: https://[project-ref].supabase.co/storage/v1/object/public/[bucket]/[filename]
@@ -70,29 +64,27 @@ public class SupabaseStorageService {
     }
 
     /**
-     * Delete a file from Supabase Storage
-     * @param fileUrl The URL of the file to delete
+     * Deletes a file from Supabase Storage
      */
     public void deleteFile(String fileUrl) throws IOException {
         try {
-            // Extract the filename from the URL
-            // URL format: https://isgqnyhkexduycwmcjxa.supabase.co/storage/v1/object/public/listings/filename.jpg
+            // Extracts the filename from the URL
             String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
             
-            // Create the URL for the delete
+            // Creates the URL for the delete
             String deleteUrl = String.format("%s/object/%s/%s", storageUrl, bucketName, filename);
             
-            // Create the request
+            // Creates the request
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(deleteUrl))
                     .header("Authorization", "Bearer " + supabaseKey)
                     .DELETE()
                     .build();
             
-            // Send the request
+            // Sends the request
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             
-            // Check if the delete was successful
+            // Checks if the delete was successful
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IOException("Failed to delete file from Supabase: " + response.body());
             }

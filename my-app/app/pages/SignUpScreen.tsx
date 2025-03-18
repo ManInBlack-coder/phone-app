@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/hooks/types';
+import { RootStackParamList } from '../../hooks/types';
 import { Ionicons } from '@expo/vector-icons';
 import { getApiUrl } from '../utils/apiUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,7 +31,7 @@ export default function SignUpScreen() {
         }),
       });
       const data = await response.json();
-      console.log(data); // Kontrollige, milline vastus serverilt tuleb
+      console.log(data); 
       if (response.ok) {
         await AsyncStorage.setItem('userId', data.id.toString());
         alert('Registration successful! Please sign in. data.id: ' + data.id);

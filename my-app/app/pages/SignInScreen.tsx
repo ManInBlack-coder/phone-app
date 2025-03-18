@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'r
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/hooks/types';
+import { RootStackParamList } from '../../hooks/types';
 import { Ionicons } from '@expo/vector-icons';
 import { getApiUrl } from '../utils/apiUtils';
 
@@ -37,7 +37,6 @@ export default function SignInScreen() {
       console.log('Response headers:', response.headers);
 
       if (response.ok) {
-        // Save session ID from response headers
         const setCookieHeader = response.headers.get('set-cookie');
         console.log('Set-Cookie header:', setCookieHeader);
         
@@ -64,7 +63,6 @@ export default function SignInScreen() {
           await AsyncStorage.setItem('token', token);
         } else {
           console.log('No token found in response');
-          // Try to get token from headers
           const authHeader = response.headers.get('Authorization');
           if (authHeader) {
             const tokenMatch = authHeader.match(/Bearer\s+(.+)/);

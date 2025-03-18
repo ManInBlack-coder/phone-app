@@ -4,11 +4,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import ProfileScreen from '../ProfileScreen';
 import { RootStackParamList } from '../../../hooks/types';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../../utils/apiUtils';
-import SettingsScreen from '../SettingsScreen';
 import LikedListings from '../likedListings';
 const Tab = createBottomTabNavigator();
 
@@ -154,7 +153,7 @@ const ListingsTab = () => {
     return (
       <TouchableOpacity 
           style={styles.listingCard}
-          onPress={() => navigation.navigate('ListingDetail', { id: item.id })}
+          onPress={() => navigation.navigate('ListingDetail', { id: item.id.toString() })}
       >
           <ListingImage imageUrl={imageUrl} sessionId={sessionId} />
           <View style={styles.listingInfo}>
@@ -276,7 +275,7 @@ export default function MainScreen() {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const cardWidth = (windowWidth - 48) / 2; // 32px container padding + 16px gap between cards
+const cardWidth = (windowWidth - 48) / 2; 
 
 const styles = StyleSheet.create({
   container: {

@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface KuulutusImageRepository extends JpaRepository<KuulutusImage, Integer> {
-    // Siia võite lisada vajadusel täiendavaid päringute meetodeid
 } 
